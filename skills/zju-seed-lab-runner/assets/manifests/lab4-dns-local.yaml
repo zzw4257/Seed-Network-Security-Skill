@@ -1,0 +1,73 @@
+{
+  "profile_id": "lab4-dns-local",
+  "doc_paths": [
+    "lab4-dns/DNS 攻击实验 - 本地攻击.md"
+  ],
+  "setup_path": "lab4-dns/Labsetup_DNS_Local ",
+  "remote_workspace": "~/seed-labs/lab4-dns-local/workspace",
+  "sync_paths": [
+    "lab4-dns/Labsetup_DNS_Local "
+  ],
+  "materials_checks": [
+    {
+      "label": "本地实验指导文档",
+      "path": "lab4-dns/DNS 攻击实验 - 本地攻击.md",
+      "required": true
+    },
+    {
+      "label": "Labsetup 目录",
+      "path": "lab4-dns/Labsetup_DNS_Local ",
+      "required": true
+    },
+    {
+      "label": "Compose 文件",
+      "path": "lab4-dns/Labsetup_DNS_Local /docker-compose.yml",
+      "required": true
+    },
+    {
+      "label": "本地攻击 Scapy 样例",
+      "path": "lab4-dns/Labsetup_DNS_Local /volumes/dns_sniff_spoof.py",
+      "required": true
+    }
+  ],
+  "preflight_checks": [
+    "repo-materials",
+    "ssh-connectivity",
+    "sudo-password",
+    "docker-compose",
+    "shell-aliases",
+    "python-runtime",
+    "docker-cleanliness"
+  ],
+  "execution_steps": [
+    "审查材料与远端环境",
+    "迁移 Labsetup 到远端标准工作区",
+    "使用 Compose 重建 DNS 本地攻击环境",
+    "完成并运行本地 DNS Scapy 攻击脚本",
+    "执行任务 1 到任务 5，收集 dig 与缓存证据",
+    "生成 Markdown 报告与 quiz"
+  ],
+  "evidence_commands": [
+    "dig ns.attacker32.com",
+    "dig www.example.com",
+    "dig @ns.attacker32.com www.example.com",
+    "rndc flush",
+    "rndc dumpdb -cache",
+    "grep attacker /var/cache/bind/dump.db"
+  ],
+  "report_sections": [
+    "实验总结",
+    "材料审查表",
+    "前置环境表",
+    "逐任务执行记录",
+    "结果与证据",
+    "实验成果留档",
+    "思考题与解释",
+    "附加 Quiz"
+  ],
+  "quiz_prompts": [
+    "为什么任务 1 的伪造结果不会像缓存投毒那样长期生效？",
+    "为什么任务 4 里试图顺带投毒 google.com 往往不会成功进入缓存？",
+    "附加部分里的记录为什么有些会被缓存，有些不会？"
+  ]
+}

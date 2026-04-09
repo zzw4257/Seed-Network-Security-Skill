@@ -1,0 +1,181 @@
+$ ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '"'"'rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db'"'"''
+
+[exit=0]
+
+STDOUT:
+;
+; Start view _default
+;
+;
+; Cache dump of view '_default' (cache _default)
+;
+; using a 604800 second stale ttl
+$DATE 20260327050002
+; authanswer
+.			1123199	IN NS	a.root-servers.net.
+			1123199	IN NS	b.root-servers.net.
+			1123199	IN NS	c.root-servers.net.
+			1123199	IN NS	d.root-servers.net.
+			1123199	IN NS	e.root-servers.net.
+			1123199	IN NS	f.root-servers.net.
+			1123199	IN NS	g.root-servers.net.
+			1123199	IN NS	h.root-servers.net.
+			1123199	IN NS	i.root-servers.net.
+			1123199	IN NS	j.root-servers.net.
+			1123199	IN NS	k.root-servers.net.
+			1123199	IN NS	l.root-servers.net.
+			1123199	IN NS	m.root-servers.net.
+; authanswer
+			1123199	RRSIG	NS 8 0 518400 (
+					20260415170000 20260402160000 54393 .
+					mF6iWk4eW+nd/Vn6rW9pxtaMjzp3sN5qizx3
+					8xyddzkx3E0EXgghjCxLMIHrL5XFo8MUVA+a
+					P9PNRojr8X76CaBP+w8pbpV7aJiH5DPLoHK+
+					jGzd3EfRYFnDCzAF0zm02taPIZwW9wzSXa7e
+					4o0kl+1/zqmN71s0kng0WTesBG0ymiJDIoiC
+					0yzChBK27Gg+Utrtt2lMR9W7Te1X8aSScuHM
+					3WISQVBKB/3Osu8eF0w8KWnH3c00uOWpkrdk
+					oAEJWCr4cXc5uHQKghrxdsMkAudKNq4kRFx9
+					t5sIHtVrpJta7CiBTp5E9WuxmQJlgZzOjFAa
+					hKIGfFEzKSzhQFIdnw== )
+; glue
+com.			777599	NS	a.gtld-servers.net.
+			777599	NS	b.gtld-servers.net.
+			777599	NS	c.gtld-servers.net.
+			777599	NS	d.gtld-servers.net.
+			777599	NS	e.gtld-servers.net.
+			777599	NS	f.gtld-servers.net.
+			777599	NS	g.gtld-servers.net.
+			777599	NS	h.gtld-servers.net.
+			777599	NS	i.gtld-servers.net.
+			777599	NS	j.gtld-servers.net.
+			777599	NS	k.gtld-servers.net.
+			777599	NS	l.gtld-servers.net.
+			777599	NS	m.gtld-servers.net.
+; additional
+			691199	DS	19718 13 2 (
+					8ACBB0CD28F41250A80A491389424D341522
+					D946B0DA0C0291F2D3D771D7805A )
+; additional
+			691199	RRSIG	DS 8 1 86400 (
+					20260415170000 20260402160000 54393 .
+					eshHvoQuQs8Ks0EfdN7q4q9jiWvBAvdXoh6I
+					oYRicNSnbDAJ5wC+OSkaupX7wO0UR9PwKDWl
+					8bDdLDQoeYRB/oGNj9PwXjHXxlTE9hd+Hzmr
+					kRUTnfjhn02t/7OyzZQf9fPJ02aGU8J2i8Bi
+					6HhciJq40u13IS1pOoBWz9WhLOEIQk31F6qA
+					zICuda7W7iNhcog/WnbeKFQc1o+KrsazqSc3
+					oczvvcUT43U+Hod8D+FQR8rX0gkVgV2HrWen
+					MxvQURs9+BmSN1cu32Ety57H+jNZoC1iW62U
+					uO8u5Uyk3GvprphuSBoVA9TsJxH51i9B2J+6
+					mWsLKpPaAc03DynlUQ== )
+; glue
+a.gtld-servers.net.	777599	A	192.5.6.30
+; glue
+			777599	AAAA	2001:503:a83e::2:30
+; glue
+b.gtld-servers.net.	777599	A	192.33.14.30
+; glue
+			777599	AAAA	2001:503:231d::2:30
+; glue
+c.gtld-servers.net.	777599	A	192.26.92.30
+; glue
+			777599	AAAA	2001:503:83eb::30
+; glue
+d.gtld-servers.net.	777599	A	192.31.80.30
+; glue
+			777599	AAAA	2001:500:856e::30
+; glue
+e.gtld-servers.net.	777599	A	192.12.94.30
+; glue
+			777599	AAAA	2001:502:1ca1::30
+; glue
+f.gtld-servers.net.	777599	A	192.35.51.30
+; glue
+			777599	AAAA	2001:503:d414::30
+; glue
+g.gtld-servers.net.	777599	A	192.42.93.30
+; glue
+			777599	AAAA	2001:503:eea3::30
+; glue
+h.gtld-servers.net.	777599	A	192.54.112.30
+; glue
+			777599	AAAA	2001:502:8cc::30
+; glue
+i.gtld-servers.net.	777599	A	192.43.172.30
+; glue
+			777599	AAAA	2001:503:39c1::30
+; glue
+j.gtld-servers.net.	777599	A	192.48.79.30
+; glue
+			777599	AAAA	2001:502:7094::30
+; glue
+k.gtld-servers.net.	777599	A	192.52.178.30
+; glue
+			777599	AAAA	2001:503:d2d::30
+; glue
+l.gtld-servers.net.	777599	A	192.41.162.30
+; glue
+			777599	AAAA	2001:500:d937::30
+; glue
+m.gtld-servers.net.	777599	A	192.55.83.30
+; glue
+			777599	AAAA	2001:501:b1f9::30
+; glue
+a.root-servers.net.	1209599	A	198.41.0.4
+; glue
+			1209599	AAAA	2001:503:ba3e::2:30
+; glue
+b.root-servers.net.	1209599	A	170.247.170.2
+; glue
+			1209599	AAAA	2801:1b8:10::b
+; glue
+c.root-servers.net.	1209599	A	192.33.4.12
+; glue
+			1209599	AAAA	2001:500:2::c
+; glue
+d.root-servers.net.	1209599	A	199.7.91.13
+; glue
+			1209599	AAAA	2001:500:2d::d
+; glue
+e.root-servers.net.	1209599	A	192.203.230.10
+; glue
+			1209599	AAAA	2001:500:a8::e
+; glue
+f.root-servers.net.	1209599	A	192.5.5.241
+; glue
+			1209599	AAAA	2001:500:2f::f
+; glue
+g.root-servers.net.	1209599	A	192.112.36.4
+; glue
+			1209599	AAAA	2001:500:12::d0d
+; glue
+h.root-servers.net.	1209599	A	198.97.190.53
+; glue
+			1209599	AAAA	2001:500:1::53
+; glue
+i.root-servers.net.	1209599	A	192.36.148.17
+; glue
+			1209599	AAAA	2001:7fe::53
+; glue
+j.root-servers.net.	1209599	A	192.58.128.30
+; glue
+			1209599	AAAA	2001:503:c27::2:30
+; glue
+k.root-servers.net.	1209599	A	193.0.14.129
+; glue
+			1209599	AAAA	2001:7fd::1
+; glue
+l.root-servers.net.	1209599	A	199.7.83.42
+; glue
+			1209599	AAAA	2001:500:9f::42
+; glue
+m.root-servers.net.	1209599	A	202.12.27.33
+; glue
+			1209599	AAAA	2001:dc3::35
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html

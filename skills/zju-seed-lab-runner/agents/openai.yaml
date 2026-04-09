@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZJU SEED Lab Runner"
+  short_description: "Proxmox SEED lab automation and archival workflow"
+  default_prompt: "Use $zju-seed-lab-runner to run a Zhejiang University SEED lab on the Proxmox VM end-to-end, collect evidence, and generate the archive-ready report."

@@ -1,0 +1,178 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ZJU 实验报告模板（基于 vendor 模板整理）
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ProvidesPackage{zjureport}
+
+%% 页边距
+\RequirePackage[left=2.50cm, right=2.50cm, top=2.50cm, bottom=2.50cm]{geometry}
+
+%% 基础宏包
+\PassOptionsToPackage{hyphens}{url}
+\RequirePackage[unicode=true,colorlinks,urlcolor=blue,linkcolor=blue,bookmarksnumbered=true]{hyperref}
+\RequirePackage{latexsym,amssymb,amsmath,amsbsy,amsopn,amstext,amsthm,amsxtra,bm,calc,ifpdf}
+\RequirePackage{graphicx}
+\RequirePackage{enumerate}
+\RequirePackage{fancyhdr}
+\RequirePackage{listings}
+\RequirePackage{makeidx}
+\RequirePackage{xcolor}
+\RequirePackage{subfigure}
+\RequirePackage{ulem}
+
+%% 中文字体与名称
+\IfFileExists{/fonts/STSONG.TTF}{
+    \setCJKmainfont[
+        Path=/fonts/,
+        AutoFakeBold=2.4,
+        AutoFakeSlant=.15
+    ]{STSONG.TTF}
+    \setCJKsansfont[
+        Path=/fonts/,
+        AutoFakeBold=2.2
+    ]{simhei.ttf}
+    \setCJKmonofont[
+        Path=/fonts/,
+        AutoFakeBold=2.2
+    ]{simsun.ttc}
+    \newCJKfontfamily\zjuheiti[Path=/fonts/,AutoFakeBold=2.2]{simhei.ttf}
+    \newCJKfontfamily\zjukaishu[Path=/fonts/,AutoFakeBold=2.2]{STKAITI.TTF}
+    \newCJKfontfamily\zjufangsong[Path=/fonts/,AutoFakeBold=2.2]{simfang.ttf}
+}{
+    % Fallback for environments without /fonts mounted (e.g. local macOS build).
+    \setCJKmainfont{Songti SC}
+    \setCJKsansfont{PingFang SC}
+    \setCJKmonofont{STHeiti}
+    \newCJKfontfamily\zjuheiti{PingFang SC}
+    \newCJKfontfamily\zjukaishu{Kaiti SC}
+    \newCJKfontfamily\zjufangsong{Songti SC}
+}
+\renewcommand{\abstractname}{\textbf{\large {摘\quad 要}}}
+\renewcommand{\contentsname}{目录}
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+
+%% 固定长度下划线
+\makeatletter
+\newcommand\dlmu[2][4cm]{\hskip1pt\underline{\hb@xt@ #1{\hss#2\hss}}\hskip3pt}
+\makeatother
+
+\newcommand{\munderline}[2][8cm]{%
+    \makebox[#1][l]{\uline{#2}}%
+}
+
+%% 自动引用中文名
+\def\equationautorefname{式}
+\def\footnoteautorefname{脚注}
+\def\itemautorefname{项}
+\def\figureautorefname{图}
+\def\tableautorefname{表}
+\def\partautorefname{篇}
+\def\appendixautorefname{附录}
+\def\chapterautorefname{章}
+\def\sectionautorefname{节}
+\def\subsectionautorefname{小节}
+\def\subsubsectionautorefname{子小节}
+\def\paragraphautorefname{段落}
+\def\subparagraphautorefname{子段落}
+\def\FancyVerbLineautorefname{行}
+\def\theoremautorefname{定理}
+
+\newtheorem{Theorem}{定理}[section]
+\newtheorem{Lemma}[Theorem]{引理}
+\newtheorem{Corollary}[Theorem]{推论}
+\newtheorem{Proposition}[Theorem]{命题}
+\newtheorem{Definition}[Theorem]{定义}
+\newtheorem{Example}[Theorem]{例}
+
+%% 参考文献设置
+\newcommand{\reference}{
+\bibliographystyle{unsrt}
+\begin{center}
+    \bibliography{reference}
+\end{center}
+}
+
+%% 盒子样式
+\newcommand{\tbox}[1]{
+\begin{center}
+\setlength{\fboxsep}{8pt}%
+\fbox{\begin{minipage}{0.90\linewidth}#1\end{minipage}}
+\end{center}
+}
+
+%% 元数据默认值（可在主文档重定义）
+\newcommand{\zjuheadertext}{网络安全原理实践：实验报告}
+\newcommand{\zjucoursetext}{网络安全原理实践}
+\newcommand{\zjureporttitletext}{实验报告}
+\newcommand{\zjunametext}{周子为}
+\newcommand{\zjuemailtext}{zzw4257@gmail.com}
+\newcommand{\zjucollegetext}{竺可桢学院 / 计算机科学与技术学院}
+\newcommand{\zjudepartmenttext}{混合班 / 信息安全}
+\newcommand{\zjumajortext}{信息安全}
+\newcommand{\zjustuidtext}{3230106267}
+\newcommand{\zjuinstructortext}{杜文亮教授}
+\newcommand{\zjureportdatetext}{\today}
+
+\newcommand{\zjuheader}[1]{\renewcommand{\zjuheadertext}{#1}}
+\newcommand{\zjucourse}[1]{\renewcommand{\zjucoursetext}{#1}}
+\newcommand{\zjureporttitle}[1]{\renewcommand{\zjureporttitletext}{#1}}
+\newcommand{\zjuname}[1]{\renewcommand{\zjunametext}{#1}}
+\newcommand{\zjuemail}[1]{\renewcommand{\zjuemailtext}{#1}}
+\newcommand{\zjucollege}[1]{\renewcommand{\zjucollegetext}{#1}}
+\newcommand{\zjudepartment}[1]{\renewcommand{\zjudepartmenttext}{#1}}
+\newcommand{\zjumajor}[1]{\renewcommand{\zjumajortext}{#1}}
+\newcommand{\zjustuid}[1]{\renewcommand{\zjustuidtext}{#1}}
+\newcommand{\zjuinstructor}[1]{\renewcommand{\zjuinstructortext}{#1}}
+\newcommand{\zjureportdate}[1]{\renewcommand{\zjureportdatetext}{#1}}
+
+%% 页眉页脚
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\zjufangsong \zjuheadertext}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+%% 封面
+\newcommand{\cover}{
+\begin{titlepage}
+    \thispagestyle{empty}
+    \begin{figure}[t!]
+        \centering
+        \subfigure{\includegraphics[width=0.52\linewidth]{figures/zju_char.png}}
+        \\
+        \subfigure{\includegraphics[width=0.24\linewidth]{figures/zju_logo.png}}
+    \end{figure}
+
+    \vspace{0.8cm}
+
+    \begin{center}
+        {\zjuheiti\Huge 浙江大学本科实验报告 \par}
+        \vspace{1.2cm}
+        {\zjuheiti\Large \zjucoursetext \par}
+        \vspace{0.5cm}
+        {\zjuheiti\LARGE \zjureporttitletext \par}
+    \end{center}
+
+    \vspace{1.4cm}
+
+    \begin{center}
+        \renewcommand{\arraystretch}{1.8}
+        \begin{tabular}{p{3.0cm}p{10.5cm}}
+            {\zjukaishu 姓名：} & \dlmu[10.2cm]{\zjunametext} \\
+            {\zjukaishu 邮箱：} & \dlmu[10.2cm]{\zjuemailtext} \\
+            {\zjukaishu 学院：} & \dlmu[10.2cm]{\zjucollegetext} \\
+            {\zjukaishu 系别：} & \dlmu[10.2cm]{\zjudepartmenttext} \\
+            {\zjukaishu 专业：} & \dlmu[10.2cm]{\zjumajortext} \\
+            {\zjukaishu 学号：} & \dlmu[10.2cm]{\zjustuidtext} \\
+            {\zjukaishu 指导教师：} & \dlmu[10.2cm]{\zjuinstructortext} \\
+        \end{tabular}
+    \end{center}
+
+    \vfill
+    \begin{center}
+        {\large \zjureportdatetext}
+    \end{center}
+\end{titlepage}
+}

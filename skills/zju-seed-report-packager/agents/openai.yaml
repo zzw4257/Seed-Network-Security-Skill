@@ -1,0 +1,4 @@
+interface:
+  display_name: "ZJU SEED Report Packager"
+  short_description: "ZJU SEED lab report package builder and PDF compiler"
+  default_prompt: "Use $zju-seed-report-packager to turn completed SEED lab evidence into a polished Zhejiang University XeLaTeX report package and compile the final PDF."

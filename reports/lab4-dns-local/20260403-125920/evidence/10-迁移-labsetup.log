@@ -1,0 +1,11 @@
+$ scp -i /Users/zzw4257/.ssh/seed-way -P 2345 -o StrictHostKeyChecking=accept-new -r /var/folders/hg/v36fg5jx7_l9jzgv4ywz4pn80000gn/T/tmpbax8_qxu/labsetup seed@localhost:/home/seed/seed-labs/lab4-dns-local/workspace/
+
+[exit=0]
+
+STDOUT:
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html

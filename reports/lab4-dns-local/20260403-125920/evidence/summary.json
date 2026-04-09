@@ -1,0 +1,816 @@
+{
+  "profile_id": "lab4-dns-local",
+  "run_id": "20260403-125920",
+  "repo_root": "/Users/zzw4257/Documents/ZJU_archieve/08-AI之路/2026-4-3-基于openwork的网安原智能体",
+  "manifest": {
+    "profile_id": "lab4-dns-local",
+    "doc_paths": [
+      "lab4-dns/DNS 攻击实验 - 本地攻击.md"
+    ],
+    "setup_path": "lab4-dns/Labsetup_DNS_Local ",
+    "remote_workspace": "~/seed-labs/lab4-dns-local/workspace",
+    "sync_paths": [
+      "lab4-dns/Labsetup_DNS_Local "
+    ],
+    "materials_checks": [
+      {
+        "label": "本地实验指导文档",
+        "path": "lab4-dns/DNS 攻击实验 - 本地攻击.md",
+        "required": true
+      },
+      {
+        "label": "Labsetup 目录",
+        "path": "lab4-dns/Labsetup_DNS_Local ",
+        "required": true
+      },
+      {
+        "label": "Compose 文件",
+        "path": "lab4-dns/Labsetup_DNS_Local /docker-compose.yml",
+        "required": true
+      },
+      {
+        "label": "本地攻击 Scapy 样例",
+        "path": "lab4-dns/Labsetup_DNS_Local /volumes/dns_sniff_spoof.py",
+        "required": true
+      }
+    ],
+    "preflight_checks": [
+      "repo-materials",
+      "ssh-connectivity",
+      "sudo-password",
+      "docker-compose",
+      "shell-aliases",
+      "python-runtime",
+      "docker-cleanliness"
+    ],
+    "execution_steps": [
+      "审查材料与远端环境",
+      "迁移 Labsetup 到远端标准工作区",
+      "使用 Compose 重建 DNS 本地攻击环境",
+      "完成并运行本地 DNS Scapy 攻击脚本",
+      "执行任务 1 到任务 5，收集 dig 与缓存证据",
+      "生成 Markdown 报告与 quiz"
+    ],
+    "evidence_commands": [
+      "dig ns.attacker32.com",
+      "dig www.example.com",
+      "dig @ns.attacker32.com www.example.com",
+      "rndc flush",
+      "rndc dumpdb -cache",
+      "grep attacker /var/cache/bind/dump.db"
+    ],
+    "report_sections": [
+      "实验总结",
+      "材料审查表",
+      "前置环境表",
+      "逐任务执行记录",
+      "结果与证据",
+      "实验成果留档",
+      "思考题与解释",
+      "附加 Quiz"
+    ],
+    "quiz_prompts": [
+      "为什么任务 1 的伪造结果不会像缓存投毒那样长期生效？",
+      "为什么任务 4 里试图顺带投毒 google.com 往往不会成功进入缓存？",
+      "附加部分里的记录为什么有些会被缓存，有些不会？"
+    ]
+  },
+  "started_at": "2026-04-03T12:59:20",
+  "materials": [
+    {
+      "项目": "本地实验指导文档",
+      "路径": "lab4-dns/DNS 攻击实验 - 本地攻击.md",
+      "状态": "已找到",
+      "说明": "必需"
+    },
+    {
+      "项目": "Labsetup 目录",
+      "路径": "lab4-dns/Labsetup_DNS_Local ",
+      "状态": "已找到",
+      "说明": "必需"
+    },
+    {
+      "项目": "Compose 文件",
+      "路径": "lab4-dns/Labsetup_DNS_Local /docker-compose.yml",
+      "状态": "已找到",
+      "说明": "必需"
+    },
+    {
+      "项目": "本地攻击 Scapy 样例",
+      "路径": "lab4-dns/Labsetup_DNS_Local /volumes/dns_sniff_spoof.py",
+      "状态": "已找到",
+      "说明": "必需"
+    }
+  ],
+  "preflight": {
+    "materials": [
+      {
+        "项目": "本地实验指导文档",
+        "路径": "lab4-dns/DNS 攻击实验 - 本地攻击.md",
+        "状态": "已找到",
+        "说明": "必需"
+      },
+      {
+        "项目": "Labsetup 目录",
+        "路径": "lab4-dns/Labsetup_DNS_Local ",
+        "状态": "已找到",
+        "说明": "必需"
+      },
+      {
+        "项目": "Compose 文件",
+        "路径": "lab4-dns/Labsetup_DNS_Local /docker-compose.yml",
+        "状态": "已找到",
+        "说明": "必需"
+      },
+      {
+        "项目": "本地攻击 Scapy 样例",
+        "路径": "lab4-dns/Labsetup_DNS_Local /volumes/dns_sniff_spoof.py",
+        "状态": "已找到",
+        "说明": "必需"
+      }
+    ],
+    "checks": [
+      {
+        "检查项": "SSH 连通性",
+        "结果": "通过",
+        "详情": "seed@localhost:2345"
+      },
+      {
+        "检查项": "操作系统",
+        "结果": "通过",
+        "详情": "\"Ubuntu 20.04.6 LTS\""
+      },
+      {
+        "检查项": "sudo 密码",
+        "结果": "通过",
+        "详情": "使用测试密码 dees"
+      },
+      {
+        "检查项": "Docker Compose",
+        "结果": "通过",
+        "详情": "/usr/local/bin/docker-compose"
+      },
+      {
+        "检查项": "SEED 别名",
+        "结果": "通过",
+        "详情": "dcbuild is aliased to `docker-compose build'\ndcup is aliased to `docker-compose up'\ndcdown is aliased to `docker-compose down'\ndockps is aliased to `docker ps --format \"{{.ID}}  {{.Names}}\" | sort -k 2'\ndocksh is a function\ndocksh () \n{ \n    docker exec -it $1 /bin/bash\n}"
+      },
+      {
+        "检查项": "Python 运行时",
+        "结果": "通过",
+        "详情": "/usr/bin/python3\nPython 3.8.10"
+      },
+      {
+        "检查项": "Docker 环境洁净度",
+        "结果": "注意",
+        "详情": "运行容器数=5; 残留网络=net-10.8.0.0\nnet-10.9.0.0"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "title": "读取容器数量",
+      "status": "ok",
+      "description": "检查远端当前运行中的容器数量",
+      "human_command": "dockps",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker ps -q | wc -l | tr -d '\"'\"' '\"'\"''",
+      "result_preview": "5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/01-读取容器数量.log"
+    },
+    {
+      "title": "读取残留网络",
+      "status": "ok",
+      "description": "检查远端是否存在非默认 Docker 网络",
+      "human_command": "docker network ls",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker network ls --format '\"'\"'{{.Name}}'\"'\"' | grep -Ev '\"'\"'^(bridge|host|none)$'\"'\"' || true'",
+      "result_preview": "net-10.8.0.0\nnet-10.9.0.0\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/02-读取残留网络.log"
+    },
+    {
+      "title": "检查 SSH",
+      "status": "ok",
+      "description": "验证远端 SSH 登录是否可用",
+      "human_command": "whoami",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc whoami",
+      "result_preview": "seed\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/03-检查-ssh.log"
+    },
+    {
+      "title": "读取 OS 版本",
+      "status": "ok",
+      "description": "确认远端系统版本",
+      "human_command": "grep '^PRETTY_NAME=' /etc/os-release",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'grep '\"'\"'^PRETTY_NAME='\"'\"' /etc/os-release'",
+      "result_preview": "PRETTY_NAME=\"Ubuntu 20.04.6 LTS\"\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/04-读取-os-版本.log"
+    },
+    {
+      "title": "验证 sudo",
+      "status": "ok",
+      "description": "验证测试 VM 的 sudo 密码",
+      "human_command": "echo dees | sudo -S -k true && echo SUDO_OK",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'echo dees | sudo -S -k true && echo SUDO_OK'",
+      "result_preview": "SUDO_OK\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/05-验证-sudo.log"
+    },
+    {
+      "title": "定位 docker-compose",
+      "status": "ok",
+      "description": "确认 docker-compose 命令存在",
+      "human_command": "command -v docker-compose",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'command -v docker-compose'",
+      "result_preview": "/usr/local/bin/docker-compose\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/06-定位-docker-compose.log"
+    },
+    {
+      "title": "检查交互式别名",
+      "status": "ok",
+      "description": "确认 SEED VM 常用 Docker 别名在交互 shell 中可用",
+      "human_command": "bash -ic 'type dcbuild dcup dcdown dockps docksh'",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -ic 'type dcbuild dcup dcdown dockps docksh'",
+      "result_preview": "dcbuild is aliased to `docker-compose build'\ndcup is aliased to `docker-compose up'\ndcdown is aliased to `docker-compose down'\ndockps is aliased to `docker ps --format \"{{.ID}}  {{.Names}}\" | sort -k 2'\ndocksh is a function\ndocksh () \n{ \n    docker exec -it $1 /bin/bash\n}\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html\nbash: cannot set terminal process group (-1): Inappropriate ioctl for device\nbash: no job control in this shell",
+      "log_path": "evidence/07-检查交互式别名.log"
+    },
+    {
+      "title": "检查远端 Python",
+      "status": "ok",
+      "description": "确认远端只依赖 python3",
+      "human_command": "command -v python3 && python3 --version",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'command -v python3 && python3 --version'",
+      "result_preview": "/usr/bin/python3\nPython 3.8.10\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/08-检查远端-python.log"
+    },
+    {
+      "title": "重建远端工作区",
+      "status": "ok",
+      "description": "清理并重建远端标准工作区",
+      "human_command": "mkdir -p /home/seed/seed-labs/lab4-dns-local/workspace",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'rm -rf /home/seed/seed-labs/lab4-dns-local/workspace && mkdir -p /home/seed/seed-labs/lab4-dns-local/workspace'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/09-重建远端工作区.log"
+    },
+    {
+      "title": "迁移 Labsetup",
+      "status": "ok",
+      "description": "把标准化后的 Labsetup 复制到远端工作区",
+      "human_command": "scp -r Labsetup -> /home/seed/seed-labs/lab4-dns-local/workspace/labsetup",
+      "actual_command": "scp -i /Users/zzw4257/.ssh/seed-way -P 2345 -o StrictHostKeyChecking=accept-new -r /var/folders/hg/v36fg5jx7_l9jzgv4ywz4pn80000gn/T/tmpbax8_qxu/labsetup seed@localhost:/home/seed/seed-labs/lab4-dns-local/workspace/",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/10-迁移-labsetup.log"
+    },
+    {
+      "title": "上传本地 DNS 攻击脚本 - 建目录",
+      "status": "ok",
+      "description": "准备远端目录",
+      "human_command": "mkdir -p /home/seed/seed-labs/lab4-dns-local/workspace/labsetup/volumes",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'mkdir -p /home/seed/seed-labs/lab4-dns-local/workspace/labsetup/volumes'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/11-上传本地-dns-攻击脚本-建目录.log"
+    },
+    {
+      "title": "上传本地 DNS 攻击脚本",
+      "status": "ok",
+      "description": "把自动生成的 Scapy 攻击脚本上传到远端 Labsetup",
+      "human_command": "scp dns_spoof_lab.py -> /home/seed/seed-labs/lab4-dns-local/workspace/labsetup/volumes/dns_spoof_lab.py",
+      "actual_command": "scp -i /Users/zzw4257/.ssh/seed-way -P 2345 -o StrictHostKeyChecking=accept-new /Users/zzw4257/Documents/ZJU_archieve/08-AI之路/2026-4-3-基于openwork的网安原智能体/reports/lab4-dns-local/20260403-125920/evidence/generated/dns_spoof_lab.py seed@localhost:/home/seed/seed-labs/lab4-dns-local/workspace/labsetup/volumes/dns_spoof_lab.py",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/12-上传本地-dns-攻击脚本.log"
+    },
+    {
+      "title": "关闭旧环境",
+      "status": "ok",
+      "description": "先用非破坏性方式收起旧的 compose 环境",
+      "human_command": "dcdown",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-local/workspace/labsetup && docker-compose down --remove-orphans || true'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html\nStopping local-dns-server-10.9.0.53 ... \nStopping seed-attacker              ... \nStopping attacker-ns-10.9.0.153     ... \nStopping seed-router                ... \nStopping user-10.9.0.5              ... \n\u001b[4A\u001b[2K\nStopping seed-attacker              ... \u001b[32mdone\u001b[0m\n\u001b[4B\u001b[3A\u001b[2K\nStopping attacker-ns-10.9.0.153     ... \u001b[32mdone\u001b[0m\n\u001b[3B\u001b[5A\u001b[2K\nStopping local-dns-server-10.9.0.53 ... \u001b[32mdone\u001b[0m\n...",
+      "log_path": "evidence/13-关闭旧环境.log"
+    },
+    {
+      "title": "清理残留同名容器",
+      "status": "ok",
+      "description": "移除历史运行留下的同名 lab 容器，避免 compose 因命名冲突失败",
+      "human_command": "docker rm -f <lab-containers>",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'for name in seed-router local-dns-server-10.9.0.53 user-10.9.0.5 seed-attacker attacker-ns-10.9.0.153; do docker rm -f \"$name\" >/dev/null 2>&1 || true; done'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/14-清理残留同名容器.log"
+    },
+    {
+      "title": "清理残留 lab 网络",
+      "status": "ok",
+      "description": "移除当前 profile 的残留网络定义，让 compose 以受控方式重建网络",
+      "human_command": "docker network rm <lab-networks>",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'for name in net-10.8.0.0 net-10.9.0.0; do docker network rm \"$name\" >/dev/null 2>&1 || true; done'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/15-清理残留-lab-网络.log"
+    },
+    {
+      "title": "构建镜像",
+      "status": "ok",
+      "description": "构建 Labsetup 里的镜像",
+      "human_command": "dcbuild",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-local/workspace/labsetup && docker-compose build'",
+      "result_preview": "Step 1/4 : FROM handsonsecurity/seed-server:bind\n ---> bbf95098dacf\nStep 2/4 : COPY named.conf           /etc/bind/\n ---> Using cache\n ---> d31005ca8a6e\nStep 3/4 : COPY named.conf.options   /etc/bind/\n ---> Using cache\n ---> 476dd3982c11\nStep 4/4 : CMD service named start && tail -f /dev/null\n ---> Using cache\n ---> 96e69d219807\nSuccessfully built 96e69d219807\nSuccessfully tagged seed-local-dns-server:latest\nStep 1/5 : FROM handsonsecurity/seed-ubuntu:large\n...",
+      "log_path": "evidence/16-构建镜像.log"
+    },
+    {
+      "title": "启动环境",
+      "status": "ok",
+      "description": "启动 compose 环境并让容器后台运行",
+      "human_command": "dcup",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-local/workspace/labsetup && docker-compose up -d'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html\nCreating network \"net-10.9.0.0\" with the default driver\nCreating network \"net-10.8.0.0\" with the default driver\nCreating seed-router ... \nCreating user-10.9.0.5 ... \nCreating local-dns-server-10.9.0.53 ... \nCreating seed-attacker              ... \nCreating attacker-ns-10.9.0.153     ... \n\u001b[2A\u001b[2K\nCreating seed-attacker              ... \u001b[32mdone\u001b[0m\n\u001b[2B\u001b[5A\u001b[2K\nCreating seed-router                ... \u001b[32mdone\u001b[0m\n...",
+      "log_path": "evidence/17-启动环境.log"
+    },
+    {
+      "title": "检查运行容器",
+      "status": "ok",
+      "description": "确认 compose 启动后的容器状态",
+      "human_command": "dockps",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker ps --format '\"'\"'table {{.Names}}\\t{{.Status}}'\"'\"''",
+      "result_preview": "NAMES                        STATUS\nlocal-dns-server-10.9.0.53   Up 8 seconds\nseed-attacker                Up 9 seconds\nattacker-ns-10.9.0.153       Up 8 seconds\nseed-router                  Up 8 seconds\nuser-10.9.0.5                Up 8 seconds\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/18-检查运行容器.log"
+    },
+    {
+      "title": "基线检查 ns.attacker32.com",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short ns.attacker32.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short ns.attacker32.com'\"'\"''",
+      "result_preview": "10.9.0.153\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/19-基线检查-ns-attacker32-com.log"
+    },
+    {
+      "title": "基线检查官方 www.example.com",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short www.example.com'\"'\"''",
+      "result_preview": "104.18.26.120\n104.18.27.120\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/20-基线检查官方-www-example-com.log"
+    },
+    {
+      "title": "基线检查攻击者权威结果",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short @ns.attacker32.com www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short @ns.attacker32.com www.example.com'\"'\"''",
+      "result_preview": "1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/21-基线检查攻击者权威结果.log"
+    },
+    {
+      "title": "定位路由器外网口",
+      "status": "ok",
+      "description": "找到 router 容器里连接 10.8.0.0/24 的接口",
+      "human_command": "相当于 docksh se 后执行: ip -o -4 addr show | awk '$4 ~ /^10\\.8\\.0\\.11\\/24/ {print $2; exit}'",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-router bash -lc '\"'\"'ip -o -4 addr show | awk '\"'\"'\"'\"'\"'\"'\"'\"'$4 ~ /^10\\.8\\.0\\.11\\/24/ {print $2; exit}'\"'\"'\"'\"'\"'\"'\"'\"''\"'\"''",
+      "result_preview": "eth0\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/22-定位路由器外网口.log"
+    },
+    {
+      "title": "设置路由延迟",
+      "status": "ok",
+      "description": "在 router 外网口人为增加 200ms 延迟，降低合法响应抢先到达的概率",
+      "human_command": "相当于 docksh se 后执行: tc qdisc replace dev eth0 root netem delay 200ms && tc qdisc show dev eth0",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-router bash -lc '\"'\"'tc qdisc replace dev eth0 root netem delay 200ms && tc qdisc show dev eth0'\"'\"''",
+      "result_preview": "qdisc netem 8002: root refcnt 2 limit 1000 delay 200.0ms\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/23-设置路由延迟.log"
+    },
+    {
+      "title": "定位桥接网卡",
+      "status": "ok",
+      "description": "找到 10.9.0.0/24 对应的 host bridge 接口，供嗅探使用",
+      "human_command": "ip -o -4 addr show | awk '$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'ip -o -4 addr show | awk '\"'\"'$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'\"'\"''",
+      "result_preview": "br-256929766fcf\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/24-定位桥接网卡.log"
+    },
+    {
+      "title": "清空 DNS 缓存",
+      "status": "ok",
+      "description": "在本地 DNS 服务器上清空缓存，避免旧结果干扰攻击",
+      "human_command": "相当于 docksh lo 后执行: rndc flush",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc flush'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/25-清空-dns-缓存.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/26-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "后台启动 task1",
+      "status": "ok",
+      "description": "在攻击者容器里后台启动对应的 Scapy 攻击脚本，等待嗅探并伪造 DNS 响应",
+      "human_command": "相当于在 seed-attacker 内后台执行: python3 /volumes/dns_spoof_lab.py --task task1 --iface br-256929766fcf --timeout 25 >/volumes/task1.log 2>&1",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec -d seed-attacker bash -lc '\"'\"'python3 /volumes/dns_spoof_lab.py --task task1 --iface br-256929766fcf --timeout 25 >/volumes/task1.log 2>&1'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/27-后台启动-task1.log"
+    },
+    {
+      "title": "task1 触发 dig (attempt 1)",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short www.example.com'\"'\"''",
+      "result_preview": "1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/28-task1-触发-dig-attempt-1.log"
+    },
+    {
+      "title": "task1 导出缓存 (attempt 1)",
+      "status": "ok",
+      "description": "导出本地 DNS 服务器缓存以便留档分析",
+      "human_command": "相当于 docksh lo 后执行: rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db'\"'\"''",
+      "result_preview": ";\n; Start view _default\n;\n;\n; Cache dump of view '_default' (cache _default)\n;\n; using a 604800 second stale ttl\n$DATE 20260327050002\n; authanswer\n.\t\t\t1123199\tIN NS\ta.root-servers.net.\n\t\t\t1123199\tIN NS\tb.root-servers.net.\n\t\t\t1123199\tIN NS\tc.root-servers.net.\n\t\t\t1123199\tIN NS\td.root-servers.net.\n\t\t\t1123199\tIN NS\te.root-servers.net.\n...",
+      "log_path": "evidence/29-task1-导出缓存-attempt-1.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/30-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "读取 task1 攻击日志",
+      "status": "ok",
+      "description": "读取攻击者容器里自动生成的日志文件",
+      "human_command": "相当于 docksh se 后执行: cat /volumes/task1.log || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'cat /volumes/task1.log || true'\"'\"''",
+      "result_preview": "[task1] spoofed www.example.com. -> 10.9.0.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/31-读取-task1-攻击日志.log"
+    },
+    {
+      "title": "定位桥接网卡",
+      "status": "ok",
+      "description": "找到 10.9.0.0/24 对应的 host bridge 接口，供嗅探使用",
+      "human_command": "ip -o -4 addr show | awk '$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'ip -o -4 addr show | awk '\"'\"'$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'\"'\"''",
+      "result_preview": "br-256929766fcf\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/32-定位桥接网卡.log"
+    },
+    {
+      "title": "清空 DNS 缓存",
+      "status": "ok",
+      "description": "在本地 DNS 服务器上清空缓存，避免旧结果干扰攻击",
+      "human_command": "相当于 docksh lo 后执行: rndc flush",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc flush'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/33-清空-dns-缓存.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/34-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "后台启动 task2",
+      "status": "ok",
+      "description": "在攻击者容器里后台启动对应的 Scapy 攻击脚本，等待嗅探并伪造 DNS 响应",
+      "human_command": "相当于在 seed-attacker 内后台执行: python3 /volumes/dns_spoof_lab.py --task task2 --iface br-256929766fcf --timeout 25 >/volumes/task2.log 2>&1",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec -d seed-attacker bash -lc '\"'\"'python3 /volumes/dns_spoof_lab.py --task task2 --iface br-256929766fcf --timeout 25 >/volumes/task2.log 2>&1'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/35-后台启动-task2.log"
+    },
+    {
+      "title": "task2 触发 dig (attempt 1)",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short www.example.com && dig +short www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short www.example.com && dig +short www.example.com'\"'\"''",
+      "result_preview": "1.2.3.5\n1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/36-task2-触发-dig-attempt-1.log"
+    },
+    {
+      "title": "task2 导出缓存 (attempt 1)",
+      "status": "ok",
+      "description": "导出本地 DNS 服务器缓存以便留档分析",
+      "human_command": "相当于 docksh lo 后执行: rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db'\"'\"''",
+      "result_preview": ";\n; Start view _default\n;\n;\n; Cache dump of view '_default' (cache _default)\n;\n; using a 604800 second stale ttl\n$DATE 20260327050011\n; authanswer\n.\t\t\t1123197\tIN NS\ta.root-servers.net.\n\t\t\t1123197\tIN NS\tb.root-servers.net.\n\t\t\t1123197\tIN NS\tc.root-servers.net.\n\t\t\t1123197\tIN NS\td.root-servers.net.\n\t\t\t1123197\tIN NS\te.root-servers.net.\n...",
+      "log_path": "evidence/37-task2-导出缓存-attempt-1.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/38-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "读取 task2 攻击日志",
+      "status": "ok",
+      "description": "读取攻击者容器里自动生成的日志文件",
+      "human_command": "相当于 docksh se 后执行: cat /volumes/task2.log || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'cat /volumes/task2.log || true'\"'\"''",
+      "result_preview": "[task2] spoofed www.example.com. -> 10.9.0.53\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/39-读取-task2-攻击日志.log"
+    },
+    {
+      "title": "task2 缓存筛选 (attempt 1)",
+      "status": "ok",
+      "description": "筛出缓存里的关键记录，便于对比任务目标",
+      "human_command": "相当于 docksh lo 后执行: grep -n 'www.example.com\\|1.2.3.5' /var/cache/bind/dump.db || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'grep -n '\"'\"'\"'\"'\"'\"'\"'\"'www.example.com\\|1.2.3.5'\"'\"'\"'\"'\"'\"'\"'\"' /var/cache/bind/dump.db || true'\"'\"''",
+      "result_preview": "97:www.example.com.\t863997\tA\t1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/40-task2-缓存筛选-attempt-1.log"
+    },
+    {
+      "title": "定位桥接网卡",
+      "status": "ok",
+      "description": "找到 10.9.0.0/24 对应的 host bridge 接口，供嗅探使用",
+      "human_command": "ip -o -4 addr show | awk '$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'ip -o -4 addr show | awk '\"'\"'$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'\"'\"''",
+      "result_preview": "br-256929766fcf\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/41-定位桥接网卡.log"
+    },
+    {
+      "title": "清空 DNS 缓存",
+      "status": "ok",
+      "description": "在本地 DNS 服务器上清空缓存，避免旧结果干扰攻击",
+      "human_command": "相当于 docksh lo 后执行: rndc flush",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc flush'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/42-清空-dns-缓存.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/43-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "后台启动 task3",
+      "status": "ok",
+      "description": "在攻击者容器里后台启动对应的 Scapy 攻击脚本，等待嗅探并伪造 DNS 响应",
+      "human_command": "相当于在 seed-attacker 内后台执行: python3 /volumes/dns_spoof_lab.py --task task3 --iface br-256929766fcf --timeout 25 >/volumes/task3.log 2>&1",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec -d seed-attacker bash -lc '\"'\"'python3 /volumes/dns_spoof_lab.py --task task3 --iface br-256929766fcf --timeout 25 >/volumes/task3.log 2>&1'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/44-后台启动-task3.log"
+    },
+    {
+      "title": "task3 触发 dig (attempt 1)",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short www.example.com && dig +short mail.example.com && dig +short @ns.attacker32.com mail.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short www.example.com && dig +short mail.example.com && dig +short @ns.attacker32.com mail.example.com'\"'\"''",
+      "result_preview": "1.2.3.5\n1.2.3.6\n1.2.3.6\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/45-task3-触发-dig-attempt-1.log"
+    },
+    {
+      "title": "task3 导出缓存 (attempt 1)",
+      "status": "ok",
+      "description": "导出本地 DNS 服务器缓存以便留档分析",
+      "human_command": "相当于 docksh lo 后执行: rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db'\"'\"''",
+      "result_preview": ";\n; Start view _default\n;\n;\n; Cache dump of view '_default' (cache _default)\n;\n; using a 604800 second stale ttl\n$DATE 20260327050020\n; authanswer\n.\t\t\t1123197\tIN NS\ta.root-servers.net.\n\t\t\t1123197\tIN NS\tb.root-servers.net.\n\t\t\t1123197\tIN NS\tc.root-servers.net.\n\t\t\t1123197\tIN NS\td.root-servers.net.\n\t\t\t1123197\tIN NS\te.root-servers.net.\n...",
+      "log_path": "evidence/46-task3-导出缓存-attempt-1.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/47-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "读取 task3 攻击日志",
+      "status": "ok",
+      "description": "读取攻击者容器里自动生成的日志文件",
+      "human_command": "相当于 docksh se 后执行: cat /volumes/task3.log || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'cat /volumes/task3.log || true'\"'\"''",
+      "result_preview": "[task3] spoofed www.example.com. -> 10.9.0.53\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/48-读取-task3-攻击日志.log"
+    },
+    {
+      "title": "task3 缓存筛选 (attempt 1)",
+      "status": "ok",
+      "description": "筛出缓存里的关键记录，便于对比任务目标",
+      "human_command": "相当于 docksh lo 后执行: grep -n 'example.com\\|attacker32.com' /var/cache/bind/dump.db || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'grep -n '\"'\"'\"'\"'\"'\"'\"'\"'example.com\\|attacker32.com'\"'\"'\"'\"'\"'\"'\"'\"' /var/cache/bind/dump.db || true'\"'\"''",
+      "result_preview": "68:ns.attacker32.com.\t615597\t\\-AAAA\t;-$NXRRSET\n69:; attacker32.com. SOA ns.attacker32.com. admin.attacker32.com. 2008111001 28800 7200 2419200 86400\n89:example.com.\t\t777597\tNS\tns.attacker32.com.\n101:mail.example.com.\t863997\tA\t1.2.3.6\n103:www.example.com.\t863997\tA\t1.2.3.5\n267:; ns.attacker32.com [v4 TTL 1797] [v6 TTL 10797] [v4 success] [v6 nxrrset]\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/49-task3-缓存筛选-attempt-1.log"
+    },
+    {
+      "title": "定位桥接网卡",
+      "status": "ok",
+      "description": "找到 10.9.0.0/24 对应的 host bridge 接口，供嗅探使用",
+      "human_command": "ip -o -4 addr show | awk '$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'ip -o -4 addr show | awk '\"'\"'$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'\"'\"''",
+      "result_preview": "br-256929766fcf\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/50-定位桥接网卡.log"
+    },
+    {
+      "title": "清空 DNS 缓存",
+      "status": "ok",
+      "description": "在本地 DNS 服务器上清空缓存，避免旧结果干扰攻击",
+      "human_command": "相当于 docksh lo 后执行: rndc flush",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc flush'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/51-清空-dns-缓存.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/52-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "后台启动 task4",
+      "status": "ok",
+      "description": "在攻击者容器里后台启动对应的 Scapy 攻击脚本，等待嗅探并伪造 DNS 响应",
+      "human_command": "相当于在 seed-attacker 内后台执行: python3 /volumes/dns_spoof_lab.py --task task4 --iface br-256929766fcf --timeout 25 >/volumes/task4.log 2>&1",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec -d seed-attacker bash -lc '\"'\"'python3 /volumes/dns_spoof_lab.py --task task4 --iface br-256929766fcf --timeout 25 >/volumes/task4.log 2>&1'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/53-后台启动-task4.log"
+    },
+    {
+      "title": "task4 触发 dig (attempt 1)",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short www.example.com'\"'\"''",
+      "result_preview": "1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/54-task4-触发-dig-attempt-1.log"
+    },
+    {
+      "title": "task4 导出缓存 (attempt 1)",
+      "status": "ok",
+      "description": "导出本地 DNS 服务器缓存以便留档分析",
+      "human_command": "相当于 docksh lo 后执行: rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db'\"'\"''",
+      "result_preview": ";\n; Start view _default\n;\n;\n; Cache dump of view '_default' (cache _default)\n;\n; using a 604800 second stale ttl\n$DATE 20260327050032\n; authanswer\n.\t\t\t1123195\tIN NS\ta.root-servers.net.\n\t\t\t1123195\tIN NS\tb.root-servers.net.\n\t\t\t1123195\tIN NS\tc.root-servers.net.\n\t\t\t1123195\tIN NS\td.root-servers.net.\n\t\t\t1123195\tIN NS\te.root-servers.net.\n...",
+      "log_path": "evidence/55-task4-导出缓存-attempt-1.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/56-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "读取 task4 攻击日志",
+      "status": "ok",
+      "description": "读取攻击者容器里自动生成的日志文件",
+      "human_command": "相当于 docksh se 后执行: cat /volumes/task4.log || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'cat /volumes/task4.log || true'\"'\"''",
+      "result_preview": "[task4] spoofed www.example.com. -> 10.9.0.53\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/57-读取-task4-攻击日志.log"
+    },
+    {
+      "title": "task4 缓存筛选 (attempt 1)",
+      "status": "ok",
+      "description": "筛出缓存里的关键记录，便于对比任务目标",
+      "human_command": "相当于 docksh lo 后执行: grep -n 'google.com\\|example.com\\|attacker32.com' /var/cache/bind/dump.db || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'grep -n '\"'\"'\"'\"'\"'\"'\"'\"'google.com\\|example.com\\|attacker32.com'\"'\"'\"'\"'\"'\"'\"'\"' /var/cache/bind/dump.db || true'\"'\"''",
+      "result_preview": "84:example.com.\t\t777597\tNS\tns.attacker32.com.\n96:www.example.com.\t863997\tA\t1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/58-task4-缓存筛选-attempt-1.log"
+    },
+    {
+      "title": "定位桥接网卡",
+      "status": "ok",
+      "description": "找到 10.9.0.0/24 对应的 host bridge 接口，供嗅探使用",
+      "human_command": "ip -o -4 addr show | awk '$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'ip -o -4 addr show | awk '\"'\"'$4 ~ /^10\\.9\\.0\\.1\\/24/ {print $2; exit}'\"'\"''",
+      "result_preview": "br-256929766fcf\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/59-定位桥接网卡.log"
+    },
+    {
+      "title": "清空 DNS 缓存",
+      "status": "ok",
+      "description": "在本地 DNS 服务器上清空缓存，避免旧结果干扰攻击",
+      "human_command": "相当于 docksh lo 后执行: rndc flush",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc flush'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/60-清空-dns-缓存.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/61-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "后台启动 task5",
+      "status": "ok",
+      "description": "在攻击者容器里后台启动对应的 Scapy 攻击脚本，等待嗅探并伪造 DNS 响应",
+      "human_command": "相当于在 seed-attacker 内后台执行: python3 /volumes/dns_spoof_lab.py --task task5 --iface br-256929766fcf --timeout 25 >/volumes/task5.log 2>&1",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec -d seed-attacker bash -lc '\"'\"'python3 /volumes/dns_spoof_lab.py --task task5 --iface br-256929766fcf --timeout 25 >/volumes/task5.log 2>&1'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/62-后台启动-task5.log"
+    },
+    {
+      "title": "task5 触发 dig (attempt 1)",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short www.example.com'\"'\"''",
+      "result_preview": "1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/63-task5-触发-dig-attempt-1.log"
+    },
+    {
+      "title": "task5 导出缓存 (attempt 1)",
+      "status": "ok",
+      "description": "导出本地 DNS 服务器缓存以便留档分析",
+      "human_command": "相当于 docksh lo 后执行: rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db'\"'\"''",
+      "result_preview": ";\n; Start view _default\n;\n;\n; Cache dump of view '_default' (cache _default)\n;\n; using a 604800 second stale ttl\n$DATE 20260327050041\n; authanswer\n.\t\t\t1123198\tIN NS\ta.root-servers.net.\n\t\t\t1123198\tIN NS\tb.root-servers.net.\n\t\t\t1123198\tIN NS\tc.root-servers.net.\n\t\t\t1123198\tIN NS\td.root-servers.net.\n\t\t\t1123198\tIN NS\te.root-servers.net.\n...",
+      "log_path": "evidence/64-task5-导出缓存-attempt-1.log"
+    },
+    {
+      "title": "停止本地攻击后台脚本",
+      "status": "failed",
+      "description": "确保攻击者容器里没有残留的后台嗅探进程",
+      "human_command": "相当于 docksh se 后执行: pkill -f dns_spoof_lab.py || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'pkill -f dns_spoof_lab.py || true'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/65-停止本地攻击后台脚本.log"
+    },
+    {
+      "title": "读取 task5 攻击日志",
+      "status": "ok",
+      "description": "读取攻击者容器里自动生成的日志文件",
+      "human_command": "相当于 docksh se 后执行: cat /volumes/task5.log || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'cat /volumes/task5.log || true'\"'\"''",
+      "result_preview": "[task5] spoofed www.example.com. -> 10.9.0.53\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/66-读取-task5-攻击日志.log"
+    },
+    {
+      "title": "task5 缓存筛选 (attempt 1)",
+      "status": "ok",
+      "description": "筛出缓存里的关键记录，便于对比任务目标",
+      "human_command": "相当于 docksh lo 后执行: grep -n 'attacker32.com\\|example.net\\|facebook.com\\|1.2.3.4\\|5.6.7.8\\|3.4.5.6' /var/cache/bind/dump.db || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'grep -n '\"'\"'\"'\"'\"'\"'\"'\"'attacker32.com\\|example.net\\|facebook.com\\|1.2.3.4\\|5.6.7.8\\|3.4.5.6'\"'\"'\"'\"'\"'\"'\"'\"' /var/cache/bind/dump.db || true'\"'\"''",
+      "result_preview": "85:\t\t\t777598\tNS\tns.attacker32.com.\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/67-task5-缓存筛选-attempt-1.log"
+    },
+    {
+      "title": "收尾关闭环境",
+      "status": "ok",
+      "description": "在证据收集完成后关闭 compose 环境，避免脏状态残留",
+      "human_command": "dcdown",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-local/workspace/labsetup && docker-compose down --remove-orphans'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html\nStopping local-dns-server-10.9.0.53 ... \nStopping seed-attacker              ... \nStopping attacker-ns-10.9.0.153     ... \nStopping seed-router                ... \nStopping user-10.9.0.5              ... \n\u001b[4A\u001b[2K\nStopping seed-attacker              ... \u001b[32mdone\u001b[0m\n\u001b[4B\u001b[3A\u001b[2K\nStopping attacker-ns-10.9.0.153     ... \u001b[32mdone\u001b[0m\n\u001b[3B\u001b[1A\u001b[2K\nStopping user-10.9.0.5              ... \u001b[32mdone\u001b[0m\n...",
+      "log_path": "evidence/68-收尾关闭环境.log"
+    }
+  ],
+  "generated_files": [
+    "evidence/generated/dns_spoof_lab.py"
+  ],
+  "analysis_notes": [
+    {
+      "title": "DNS 配置基线",
+      "body": "ns.attacker32.com -> 10.9.0.153\nwww.example.com -> 104.18.26.120\n104.18.27.120\n@ns.attacker32.com www.example.com -> 1.2.3.5"
+    },
+    {
+      "title": "任务 1：直接向用户伪造响应",
+      "body": "第 1 次尝试成功。\n用户侧 dig 结果:\n1.2.3.5\n\n攻击日志:\n[task1] spoofed www.example.com. -> 10.9.0.5\n"
+    },
+    {
+      "title": "任务 2：DNS 缓存投毒",
+      "body": "                第 1 次尝试成功。\n                两次 dig 输出:\n                1.2.3.5\n1.2.3.5\n\n                缓存筛选:\n                97:www.example.com.\t863997\tA\t1.2.3.5\n"
+    },
+    {
+      "title": "任务 3：伪造 NS 记录",
+      "body": "                第 1 次尝试成功。\n                dig 结果:\n                1.2.3.5\n1.2.3.6\n1.2.3.6\n\n                缓存筛选:\n                68:ns.attacker32.com.\t615597\t\\-AAAA\t;-$NXRRSET\n69:; attacker32.com. SOA ns.attacker32.com. admin.attacker32.com. 2008111001 28800 7200 2419200 86400\n89:example.com.\t\t777597\tNS\tns.attacker32.com.\n101:mail.example.com.\t863997\tA\t1.2.3.6\n103:www.example.com.\t863997\tA\t1.2.3.5\n267:; ns.attacker32.com [v4 TTL 1797] [v6 TTL 10797] [v4 success] [v6 nxrrset]\n"
+    },
+    {
+      "title": "任务 4：伪造另一个域的 NS 记录",
+      "body": "                第 1 次尝试完成。\n                关键缓存记录:\n                84:example.com.\t\t777597\tNS\tns.attacker32.com.\n96:www.example.com.\t863997\tA\t1.2.3.5\n\n                观察: 缓存里保留了与当前查询域相关的记录，而与查询无关的 google.com 记录通常不会被接受。\n"
+    },
+    {
+      "title": "任务 5：附加部分记录缓存",
+      "body": "第 1 次尝试完成。\n关键缓存记录:\n85:\t\t\t777598\tNS\tns.attacker32.com.\n\n观察: 与权威记录直接相关的 glue 记录更容易留下，而无关的额外条目不会稳定缓存。\n"
+    }
+  ],
+  "issues": [],
+  "status": "completed",
+  "completed_at": "2026-04-03T13:00:43"
+}

@@ -1,0 +1,532 @@
+{
+  "profile_id": "lab4-dns-remote",
+  "run_id": "20260403-130805",
+  "repo_root": "/Users/zzw4257/Documents/ZJU_archieve/08-AI之路/2026-4-3-基于openwork的网安原智能体",
+  "manifest": {
+    "profile_id": "lab4-dns-remote",
+    "doc_paths": [
+      "lab4-dns/DNS 攻击实验 - 远程攻击.md"
+    ],
+    "setup_path": "lab4-dns/Labsetup_DNS_Remote",
+    "remote_workspace": "~/seed-labs/lab4-dns-remote/workspace",
+    "sync_paths": [
+      "lab4-dns/Labsetup_DNS_Remote"
+    ],
+    "materials_checks": [
+      {
+        "label": "远程实验指导文档",
+        "path": "lab4-dns/DNS 攻击实验 - 远程攻击.md",
+        "required": true
+      },
+      {
+        "label": "Labsetup 目录",
+        "path": "lab4-dns/Labsetup_DNS_Remote",
+        "required": true
+      },
+      {
+        "label": "Compose 文件",
+        "path": "lab4-dns/Labsetup_DNS_Remote/docker-compose.yml",
+        "required": true
+      },
+      {
+        "label": "Kaminsky C 骨架",
+        "path": "lab4-dns/Labsetup_DNS_Remote/Files/attack.c",
+        "required": true
+      }
+    ],
+    "preflight_checks": [
+      "repo-materials",
+      "ssh-connectivity",
+      "sudo-password",
+      "docker-compose",
+      "shell-aliases",
+      "python-runtime",
+      "docker-cleanliness"
+    ],
+    "execution_steps": [
+      "审查材料与远端环境",
+      "迁移 Labsetup 到远端标准工作区",
+      "使用 Compose 重建 DNS 远程攻击环境",
+      "生成 Kaminsky 请求与响应模板",
+      "补全并编译 attack.c",
+      "运行攻击并验证缓存与 dig 结果",
+      "生成 Markdown 报告与 quiz"
+    ],
+    "evidence_commands": [
+      "dig ns.attacker32.com",
+      "dig www.example.com",
+      "dig @ns.attacker32.com www.example.com",
+      "rndc dumpdb -cache && grep attacker /var/cache/bind/dump.db",
+      "gcc -o attack attack.c",
+      "timeout 30s ./attack"
+    ],
+    "report_sections": [
+      "实验总结",
+      "材料审查表",
+      "前置环境表",
+      "逐任务执行记录",
+      "结果与证据",
+      "实验成果留档",
+      "思考题与解释",
+      "附加 Quiz"
+    ],
+    "quiz_prompts": [
+      "Kaminsky 攻击为什么要不断更换随机子域名？",
+      "为什么远程缓存投毒要同时考虑速度和 Transaction ID？",
+      "混合使用 Scapy 与 C 相比纯 Python 的核心收益是什么？"
+    ]
+  },
+  "started_at": "2026-04-03T13:08:05",
+  "materials": [
+    {
+      "项目": "远程实验指导文档",
+      "路径": "lab4-dns/DNS 攻击实验 - 远程攻击.md",
+      "状态": "已找到",
+      "说明": "必需"
+    },
+    {
+      "项目": "Labsetup 目录",
+      "路径": "lab4-dns/Labsetup_DNS_Remote",
+      "状态": "已找到",
+      "说明": "必需"
+    },
+    {
+      "项目": "Compose 文件",
+      "路径": "lab4-dns/Labsetup_DNS_Remote/docker-compose.yml",
+      "状态": "已找到",
+      "说明": "必需"
+    },
+    {
+      "项目": "Kaminsky C 骨架",
+      "路径": "lab4-dns/Labsetup_DNS_Remote/Files/attack.c",
+      "状态": "已找到",
+      "说明": "必需"
+    }
+  ],
+  "preflight": {
+    "materials": [
+      {
+        "项目": "远程实验指导文档",
+        "路径": "lab4-dns/DNS 攻击实验 - 远程攻击.md",
+        "状态": "已找到",
+        "说明": "必需"
+      },
+      {
+        "项目": "Labsetup 目录",
+        "路径": "lab4-dns/Labsetup_DNS_Remote",
+        "状态": "已找到",
+        "说明": "必需"
+      },
+      {
+        "项目": "Compose 文件",
+        "路径": "lab4-dns/Labsetup_DNS_Remote/docker-compose.yml",
+        "状态": "已找到",
+        "说明": "必需"
+      },
+      {
+        "项目": "Kaminsky C 骨架",
+        "路径": "lab4-dns/Labsetup_DNS_Remote/Files/attack.c",
+        "状态": "已找到",
+        "说明": "必需"
+      }
+    ],
+    "checks": [
+      {
+        "检查项": "SSH 连通性",
+        "结果": "通过",
+        "详情": "seed@localhost:2345"
+      },
+      {
+        "检查项": "操作系统",
+        "结果": "通过",
+        "详情": "\"Ubuntu 20.04.6 LTS\""
+      },
+      {
+        "检查项": "sudo 密码",
+        "结果": "通过",
+        "详情": "使用测试密码 dees"
+      },
+      {
+        "检查项": "Docker Compose",
+        "结果": "通过",
+        "详情": "/usr/local/bin/docker-compose"
+      },
+      {
+        "检查项": "SEED 别名",
+        "结果": "通过",
+        "详情": "dcbuild is aliased to `docker-compose build'\ndcup is aliased to `docker-compose up'\ndcdown is aliased to `docker-compose down'\ndockps is aliased to `docker ps --format \"{{.ID}}  {{.Names}}\" | sort -k 2'\ndocksh is a function\ndocksh () \n{ \n    docker exec -it $1 /bin/bash\n}"
+      },
+      {
+        "检查项": "Python 运行时",
+        "结果": "通过",
+        "详情": "/usr/bin/python3\nPython 3.8.10"
+      },
+      {
+        "检查项": "Docker 环境洁净度",
+        "结果": "注意",
+        "详情": "运行容器数=4; 残留网络=seed-net"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "title": "读取容器数量",
+      "status": "ok",
+      "description": "检查远端当前运行中的容器数量",
+      "human_command": "dockps",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker ps -q | wc -l | tr -d '\"'\"' '\"'\"''",
+      "result_preview": "4\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/01-读取容器数量.log"
+    },
+    {
+      "title": "读取残留网络",
+      "status": "ok",
+      "description": "检查远端是否存在非默认 Docker 网络",
+      "human_command": "docker network ls",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker network ls --format '\"'\"'{{.Name}}'\"'\"' | grep -Ev '\"'\"'^(bridge|host|none)$'\"'\"' || true'",
+      "result_preview": "seed-net\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/02-读取残留网络.log"
+    },
+    {
+      "title": "检查 SSH",
+      "status": "ok",
+      "description": "验证远端 SSH 登录是否可用",
+      "human_command": "whoami",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc whoami",
+      "result_preview": "seed\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/03-检查-ssh.log"
+    },
+    {
+      "title": "读取 OS 版本",
+      "status": "ok",
+      "description": "确认远端系统版本",
+      "human_command": "grep '^PRETTY_NAME=' /etc/os-release",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'grep '\"'\"'^PRETTY_NAME='\"'\"' /etc/os-release'",
+      "result_preview": "PRETTY_NAME=\"Ubuntu 20.04.6 LTS\"\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/04-读取-os-版本.log"
+    },
+    {
+      "title": "验证 sudo",
+      "status": "ok",
+      "description": "验证测试 VM 的 sudo 密码",
+      "human_command": "echo dees | sudo -S -k true && echo SUDO_OK",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'echo dees | sudo -S -k true && echo SUDO_OK'",
+      "result_preview": "SUDO_OK\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/05-验证-sudo.log"
+    },
+    {
+      "title": "定位 docker-compose",
+      "status": "ok",
+      "description": "确认 docker-compose 命令存在",
+      "human_command": "command -v docker-compose",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'command -v docker-compose'",
+      "result_preview": "/usr/local/bin/docker-compose\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/06-定位-docker-compose.log"
+    },
+    {
+      "title": "检查交互式别名",
+      "status": "ok",
+      "description": "确认 SEED VM 常用 Docker 别名在交互 shell 中可用",
+      "human_command": "bash -ic 'type dcbuild dcup dcdown dockps docksh'",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -ic 'type dcbuild dcup dcdown dockps docksh'",
+      "result_preview": "dcbuild is aliased to `docker-compose build'\ndcup is aliased to `docker-compose up'\ndcdown is aliased to `docker-compose down'\ndockps is aliased to `docker ps --format \"{{.ID}}  {{.Names}}\" | sort -k 2'\ndocksh is a function\ndocksh () \n{ \n    docker exec -it $1 /bin/bash\n}\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html\nbash: cannot set terminal process group (-1): Inappropriate ioctl for device\nbash: no job control in this shell",
+      "log_path": "evidence/07-检查交互式别名.log"
+    },
+    {
+      "title": "检查远端 Python",
+      "status": "ok",
+      "description": "确认远端只依赖 python3",
+      "human_command": "command -v python3 && python3 --version",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'command -v python3 && python3 --version'",
+      "result_preview": "/usr/bin/python3\nPython 3.8.10\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/08-检查远端-python.log"
+    },
+    {
+      "title": "重建远端工作区",
+      "status": "ok",
+      "description": "清理并重建远端标准工作区",
+      "human_command": "mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'rm -rf /home/seed/seed-labs/lab4-dns-remote/workspace && mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/09-重建远端工作区.log"
+    },
+    {
+      "title": "迁移 Labsetup",
+      "status": "ok",
+      "description": "把标准化后的 Labsetup 复制到远端工作区",
+      "human_command": "scp -r Labsetup -> /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup",
+      "actual_command": "scp -i /Users/zzw4257/.ssh/seed-way -P 2345 -o StrictHostKeyChecking=accept-new -r /var/folders/hg/v36fg5jx7_l9jzgv4ywz4pn80000gn/T/tmp7zdxlxg3/labsetup seed@localhost:/home/seed/seed-labs/lab4-dns-remote/workspace/",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/10-迁移-labsetup.log"
+    },
+    {
+      "title": "关闭旧环境",
+      "status": "ok",
+      "description": "先用非破坏性方式收起旧的 compose 环境",
+      "human_command": "dcdown",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup && docker-compose down --remove-orphans || true'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html\nStopping local-dns-server-10.9.0.53 ... \nStopping seed-attacker              ... \nStopping attacker-ns-10.9.0.153     ... \nStopping user-10.9.0.5              ... \n\u001b[3A\u001b[2K\nStopping seed-attacker              ... \u001b[32mdone\u001b[0m\n\u001b[3B\u001b[4A\u001b[2K\nStopping local-dns-server-10.9.0.53 ... \u001b[32mdone\u001b[0m\n\u001b[4B\u001b[1A\u001b[2K\nStopping user-10.9.0.5              ... \u001b[32mdone\u001b[0m\n\u001b[1B\u001b[2A\u001b[2K\n...",
+      "log_path": "evidence/11-关闭旧环境.log"
+    },
+    {
+      "title": "清理残留同名容器",
+      "status": "ok",
+      "description": "移除历史运行留下的同名 lab 容器，避免 compose 因命名冲突失败",
+      "human_command": "docker rm -f <lab-containers>",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'for name in local-dns-server-10.9.0.53 user-10.9.0.5 seed-attacker attacker-ns-10.9.0.153; do docker rm -f \"$name\" >/dev/null 2>&1 || true; done'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/12-清理残留同名容器.log"
+    },
+    {
+      "title": "清理残留 lab 网络",
+      "status": "ok",
+      "description": "移除当前 profile 的残留网络定义，让 compose 以受控方式重建网络",
+      "human_command": "docker network rm <lab-networks>",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'for name in seed-net; do docker network rm \"$name\" >/dev/null 2>&1 || true; done'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/13-清理残留-lab-网络.log"
+    },
+    {
+      "title": "构建镜像",
+      "status": "ok",
+      "description": "构建 Labsetup 里的镜像",
+      "human_command": "dcbuild",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup && docker-compose build'",
+      "result_preview": "Step 1/4 : FROM handsonsecurity/seed-server:bind\n ---> bbf95098dacf\nStep 2/4 : COPY named.conf           /etc/bind/\n ---> Using cache\n ---> b0cabfa86df9\nStep 3/4 : COPY named.conf.options   /etc/bind/\n ---> Using cache\n ---> 71641d200455\nStep 4/4 : CMD service named start && tail -f /dev/null\n ---> Using cache\n ---> 24569a484b73\nSuccessfully built 24569a484b73\nSuccessfully tagged seed-local-dns-server:latest\nStep 1/5 : FROM handsonsecurity/seed-ubuntu:large\n...",
+      "log_path": "evidence/14-构建镜像.log"
+    },
+    {
+      "title": "启动环境",
+      "status": "ok",
+      "description": "启动 compose 环境并让容器后台运行",
+      "human_command": "dcup",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup && docker-compose up -d'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html\nCreating network \"seed-net\" with the default driver\nCreating user-10.9.0.5 ... \nCreating seed-attacker ... \nCreating local-dns-server-10.9.0.53 ... \nCreating attacker-ns-10.9.0.153     ... \n\u001b[3A\u001b[2K\nCreating seed-attacker              ... \u001b[32mdone\u001b[0m\n\u001b[3B\u001b[4A\u001b[2K\nCreating user-10.9.0.5              ... \u001b[32mdone\u001b[0m\n\u001b[4B\u001b[2A\u001b[2K\nCreating local-dns-server-10.9.0.53 ... \u001b[32mdone\u001b[0m\n...",
+      "log_path": "evidence/15-启动环境.log"
+    },
+    {
+      "title": "检查运行容器",
+      "status": "ok",
+      "description": "确认 compose 启动后的容器状态",
+      "human_command": "dockps",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker ps --format '\"'\"'table {{.Names}}\\t{{.Status}}'\"'\"''",
+      "result_preview": "NAMES                        STATUS\nattacker-ns-10.9.0.153       Up 8 seconds\nseed-attacker                Up 8 seconds\nlocal-dns-server-10.9.0.53   Up 8 seconds\nuser-10.9.0.5                Up 8 seconds\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/16-检查运行容器.log"
+    },
+    {
+      "title": "基线检查 ns.attacker32.com",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short ns.attacker32.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short ns.attacker32.com'\"'\"''",
+      "result_preview": "10.9.0.153\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/17-基线检查-ns-attacker32-com.log"
+    },
+    {
+      "title": "基线检查官方 www.example.com",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short www.example.com'\"'\"''",
+      "result_preview": "104.18.26.120\n104.18.27.120\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/18-基线检查官方-www-example-com.log"
+    },
+    {
+      "title": "基线检查攻击者权威结果",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short @ns.attacker32.com www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short @ns.attacker32.com www.example.com'\"'\"''",
+      "result_preview": "1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/19-基线检查攻击者权威结果.log"
+    },
+    {
+      "title": "查询合法权威 NS IP",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: for ns in $(dig +short NS example.com); do dig +short $ns; done | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$' | sort -u",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'for ns in $(dig +short NS example.com); do dig +short $ns; done | grep -E '\"'\"'\"'\"'\"'\"'\"'\"'^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$'\"'\"'\"'\"'\"'\"'\"'\"' | sort -u'\"'\"''",
+      "result_preview": "108.162.192.162\n108.162.195.228\n162.159.44.228\n172.64.32.162\n172.64.35.228\n173.245.58.162\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/20-查询合法权威-ns-ip.log"
+    },
+    {
+      "title": "上传 prepare_packets.py - 建目录",
+      "status": "ok",
+      "description": "准备远端目录",
+      "human_command": "mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/Files",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/Files'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/21-上传-prepare-packets-py-建目录.log"
+    },
+    {
+      "title": "上传 prepare_packets.py",
+      "status": "ok",
+      "description": "把 Kaminsky 模板生成脚本上传到远端 Files",
+      "human_command": "scp prepare_packets.py -> /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/Files/prepare_packets.py",
+      "actual_command": "scp -i /Users/zzw4257/.ssh/seed-way -P 2345 -o StrictHostKeyChecking=accept-new /Users/zzw4257/Documents/ZJU_archieve/08-AI之路/2026-4-3-基于openwork的网安原智能体/reports/lab4-dns-remote/20260403-130805/evidence/generated/prepare_packets.py seed@localhost:/home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/Files/prepare_packets.py",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/22-上传-prepare-packets-py.log"
+    },
+    {
+      "title": "同步模板脚本到 volumes - 建目录",
+      "status": "ok",
+      "description": "准备远端目录",
+      "human_command": "mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/23-同步模板脚本到-volumes-建目录.log"
+    },
+    {
+      "title": "同步模板脚本到 volumes",
+      "status": "ok",
+      "description": "让攻击者容器可直接访问模板生成脚本",
+      "human_command": "scp prepare_packets.py -> /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes/prepare_packets.py",
+      "actual_command": "scp -i /Users/zzw4257/.ssh/seed-way -P 2345 -o StrictHostKeyChecking=accept-new /Users/zzw4257/Documents/ZJU_archieve/08-AI之路/2026-4-3-基于openwork的网安原智能体/reports/lab4-dns-remote/20260403-130805/evidence/generated/prepare_packets.py seed@localhost:/home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes/prepare_packets.py",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/24-同步模板脚本到-volumes.log"
+    },
+    {
+      "title": "上传 attack.c - 建目录",
+      "status": "ok",
+      "description": "准备远端目录",
+      "human_command": "mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/Files",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/Files'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/25-上传-attack-c-建目录.log"
+    },
+    {
+      "title": "上传 attack.c",
+      "status": "ok",
+      "description": "把补全后的 attack.c 上传到远端 Files",
+      "human_command": "scp attack.c -> /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/Files/attack.c",
+      "actual_command": "scp -i /Users/zzw4257/.ssh/seed-way -P 2345 -o StrictHostKeyChecking=accept-new /Users/zzw4257/Documents/ZJU_archieve/08-AI之路/2026-4-3-基于openwork的网安原智能体/reports/lab4-dns-remote/20260403-130805/evidence/generated/attack.c seed@localhost:/home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/Files/attack.c",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/26-上传-attack-c.log"
+    },
+    {
+      "title": "同步 attack.c 到 volumes - 建目录",
+      "status": "ok",
+      "description": "准备远端目录",
+      "human_command": "mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'mkdir -p /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/27-同步-attack-c-到-volumes-建目录.log"
+    },
+    {
+      "title": "同步 attack.c 到 volumes",
+      "status": "ok",
+      "description": "让攻击者容器可直接编译 attack.c",
+      "human_command": "scp attack.c -> /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes/attack.c",
+      "actual_command": "scp -i /Users/zzw4257/.ssh/seed-way -P 2345 -o StrictHostKeyChecking=accept-new /Users/zzw4257/Documents/ZJU_archieve/08-AI之路/2026-4-3-基于openwork的网安原智能体/reports/lab4-dns-remote/20260403-130805/evidence/generated/attack.c seed@localhost:/home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes/attack.c",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/28-同步-attack-c-到-volumes.log"
+    },
+    {
+      "title": "清空 DNS 缓存",
+      "status": "ok",
+      "description": "在本地 DNS 服务器上清空缓存，避免旧结果干扰攻击",
+      "human_command": "相当于 docksh lo 后执行: rndc flush",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc flush'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/29-清空-dns-缓存.log"
+    },
+    {
+      "title": "生成 Kaminsky 数据包模板",
+      "status": "ok",
+      "description": "在攻击者容器里用 Scapy 生成请求与响应模板",
+      "human_command": "相当于 docksh se 后执行: cd /volumes && python3 prepare_packets.py",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec seed-attacker bash -lc '\"'\"'cd /volumes && python3 prepare_packets.py'\"'\"''",
+      "result_preview": "Prepared ip_req.bin and ip_resp.bin with legitimate NS 108.162.192.162\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/30-生成-kaminsky-数据包模板.log"
+    },
+    {
+      "title": "编译 attack.c",
+      "status": "ok",
+      "description": "在宿主机的挂载目录里编译补全后的 attack.c，避免依赖容器内缺失的 gcc",
+      "human_command": "gcc -O2 -o attack attack.c",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes && gcc -O2 -o attack attack.c'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/31-编译-attack-c.log"
+    },
+    {
+      "title": "清空 DNS 缓存",
+      "status": "ok",
+      "description": "在本地 DNS 服务器上清空缓存，避免旧结果干扰攻击",
+      "human_command": "相当于 docksh lo 后执行: rndc flush",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc flush'\"'\"''",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/32-清空-dns-缓存.log"
+    },
+    {
+      "title": "运行 Kaminsky 攻击 attempt 1",
+      "status": "ok",
+      "description": "在宿主机上以 sudo 运行编译后的攻击程序，利用随机子域名反复触发并投毒",
+      "human_command": "echo dees | sudo -S timeout 30s ./attack",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes && echo dees | sudo -S timeout 30s ./attack > attack-run.log 2>&1 || true'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/33-运行-kaminsky-攻击-attempt-1.log"
+    },
+    {
+      "title": "远程攻击缓存导出 attempt 1",
+      "status": "ok",
+      "description": "导出本地 DNS 服务器缓存以便留档分析",
+      "human_command": "相当于 docksh lo 后执行: rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'rndc dumpdb -cache >/dev/null 2>&1 && cat /var/cache/bind/dump.db'\"'\"''",
+      "result_preview": ";\n; Start view _default\n;\n;\n; Cache dump of view '_default' (cache _default)\n;\n; using a 604800 second stale ttl\n$DATE 20260327050916\n; authanswer\n.\t\t\t1123170\tIN NS\ta.root-servers.net.\n\t\t\t1123170\tIN NS\tb.root-servers.net.\n\t\t\t1123170\tIN NS\tc.root-servers.net.\n\t\t\t1123170\tIN NS\td.root-servers.net.\n\t\t\t1123170\tIN NS\te.root-servers.net.\n...",
+      "log_path": "evidence/34-远程攻击缓存导出-attempt-1.log"
+    },
+    {
+      "title": "远程攻击缓存筛选 attempt 1",
+      "status": "ok",
+      "description": "筛选缓存中的关键 NS 记录",
+      "human_command": "相当于 docksh lo 后执行: grep -n 'attacker32.com\\|example.com' /var/cache/bind/dump.db || true",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '\"'\"'grep -n '\"'\"'\"'\"'\"'\"'\"'\"'attacker32.com\\|example.com'\"'\"'\"'\"'\"'\"'\"'\"' /var/cache/bind/dump.db || true'\"'\"''",
+      "result_preview": "84:example.com.\t\t777570\tNS\tns.attacker32.com.\n96:nprqb.example.com.\t863991\tA\t1.2.3.4\n98:qghon.example.com.\t606581\t\\-A\t;-$NXRRSET\n99:; qghon.example.com. RRSIG NSEC ...\n100:; qghon.example.com. NSEC \\000.qghon.example.com. RRSIG NSEC TYPE128\n101:; example.com. SOA elliott.ns.cloudflare.com. dns.cloudflare.com. 2400651045 10000 2400 604800 1800\n102:; example.com. RRSIG SOA ...\n104:wsugp.example.com.\t606572\t\\-A\t;-$NXRRSET\n105:; wsugp.example.com. RRSIG NSEC ...\n106:; wsugp.example.com. NSEC \\000.wsugp.example.com. RRSIG NSEC TYPE128\n107:; example.com. SOA elliott.ns.cloudflare.com. dns.cloudflare.com. 2400651045 10000 2400 604800 1800\n108:; example.com. RRSIG SOA ...\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n...",
+      "log_path": "evidence/35-远程攻击缓存筛选-attempt-1.log"
+    },
+    {
+      "title": "读取 Kaminsky 攻击日志 attempt 1",
+      "status": "ok",
+      "description": "从宿主机挂载目录读取攻击程序日志",
+      "human_command": "tail -n 40 attack-run.log",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup/volumes && tail -n 40 attack-run.log || true'",
+      "result_preview": "triggering wsugp.example.com\ntriggering qghon.example.com\ntriggering nprqb.example.com\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/36-读取-kaminsky-攻击日志-attempt-1.log"
+    },
+    {
+      "title": "验证远程攻击结果",
+      "status": "ok",
+      "description": "从用户容器执行 dig 验证命令",
+      "human_command": "相当于 docksh us 后执行: dig +short www.example.com && dig +short @ns.attacker32.com www.example.com",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '\"'\"'dig +short www.example.com && dig +short @ns.attacker32.com www.example.com'\"'\"''",
+      "result_preview": "1.2.3.5\n1.2.3.5\n** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html",
+      "log_path": "evidence/37-验证远程攻击结果.log"
+    },
+    {
+      "title": "收尾关闭环境",
+      "status": "ok",
+      "description": "在证据收集完成后关闭 compose 环境，避免脏状态残留",
+      "human_command": "dcdown",
+      "actual_command": "ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup && docker-compose down --remove-orphans'",
+      "result_preview": "** WARNING: connection is not using a post-quantum key exchange algorithm.\n** This session may be vulnerable to \"store now, decrypt later\" attacks.\n** The server may need to be upgraded. See https://openssh.com/pq.html\nStopping attacker-ns-10.9.0.153     ... \nStopping seed-attacker              ... \nStopping local-dns-server-10.9.0.53 ... \nStopping user-10.9.0.5              ... \n\u001b[3A\u001b[2K\nStopping seed-attacker              ... \u001b[32mdone\u001b[0m\n\u001b[3B\u001b[4A\u001b[2K\nStopping attacker-ns-10.9.0.153     ... \u001b[32mdone\u001b[0m\n\u001b[4B\u001b[1A\u001b[2K\nStopping user-10.9.0.5              ... \u001b[32mdone\u001b[0m\n\u001b[1B\u001b[2A\u001b[2K\n...",
+      "log_path": "evidence/38-收尾关闭环境.log"
+    }
+  ],
+  "generated_files": [
+    "evidence/generated/prepare_packets.py",
+    "evidence/generated/attack.c"
+  ],
+  "analysis_notes": [
+    {
+      "title": "DNS 配置基线",
+      "body": "ns.attacker32.com -> 10.9.0.153\nwww.example.com -> 104.18.26.120\n104.18.27.120\n@ns.attacker32.com www.example.com -> 1.2.3.5"
+    },
+    {
+      "title": "远程 Kaminsky 攻击结果",
+      "body": "                第 1 次尝试成功。\n                缓存筛选:\n                84:example.com.\t\t777570\tNS\tns.attacker32.com.\n96:nprqb.example.com.\t863991\tA\t1.2.3.4\n98:qghon.example.com.\t606581\t\\-A\t;-$NXRRSET\n99:; qghon.example.com. RRSIG NSEC ...\n100:; qghon.example.com. NSEC \\000.qghon.example.com. RRSIG NSEC TYPE128\n101:; example.com. SOA elliott.ns.cloudflare.com. dns.cloudflare.com. 2400651045 10000 2400 604800 1800\n102:; example.com. RRSIG SOA ...\n104:wsugp.example.com.\t606572\t\\-A\t;-$NXRRSET\n105:; wsugp.example.com. RRSIG NSEC ...\n106:; wsugp.example.com. NSEC \\000.wsugp.example.com. RRSIG NSEC TYPE128\n107:; example.com. SOA elliott.ns.cloudflare.com. dns.cloudflare.com. 2400651045 10000 2400 604800 1800\n108:; example.com. RRSIG SOA ...\n\n                用户侧 dig 对比:\n                1.2.3.5\n1.2.3.5\n"
+    }
+  ],
+  "issues": [],
+  "status": "completed",
+  "completed_at": "2026-04-03T13:09:17"
+}

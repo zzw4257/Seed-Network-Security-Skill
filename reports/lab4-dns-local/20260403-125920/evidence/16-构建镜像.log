@@ -1,0 +1,58 @@
+$ ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-local/workspace/labsetup && docker-compose build'
+
+[exit=0]
+
+STDOUT:
+Step 1/4 : FROM handsonsecurity/seed-server:bind
+ ---> bbf95098dacf
+Step 2/4 : COPY named.conf           /etc/bind/
+ ---> Using cache
+ ---> d31005ca8a6e
+Step 3/4 : COPY named.conf.options   /etc/bind/
+ ---> Using cache
+ ---> 476dd3982c11
+Step 4/4 : CMD service named start && tail -f /dev/null
+ ---> Using cache
+ ---> 96e69d219807
+
+Successfully built 96e69d219807
+Successfully tagged seed-local-dns-server:latest
+Step 1/5 : FROM handsonsecurity/seed-ubuntu:large
+ ---> cecb04fbf1dd
+Step 2/5 : COPY resolv.conf /etc/resolv.conf.override
+ ---> Using cache
+ ---> 5729e3006cf5
+Step 3/5 : COPY start.sh /
+ ---> Using cache
+ ---> 3b2a364bc109
+Step 4/5 : RUN  chmod +x /start.sh
+ ---> Using cache
+ ---> 3d6e1cde0dae
+Step 5/5 : CMD [ "/start.sh"]
+ ---> Using cache
+ ---> 28fe3469ab7e
+
+Successfully built 28fe3469ab7e
+Successfully tagged seed-user:latest
+Step 1/3 : FROM handsonsecurity/seed-server:bind
+ ---> bbf95098dacf
+Step 2/3 : COPY named.conf  zone_attacker32.com  zone_example.com  /etc/bind/
+ ---> Using cache
+ ---> bcf56ef3b4ab
+Step 3/3 : CMD service named start && tail -f /dev/null
+ ---> Using cache
+ ---> 4e1c1251bfdf
+
+Successfully built 4e1c1251bfdf
+Successfully tagged seed-attacker-ns:latest
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Router uses an image, skipping
+attacker uses an image, skipping
+Building local-server
+Building user
+Building attacker-ns

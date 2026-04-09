@@ -1,0 +1,43 @@
+$ ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-local/workspace/labsetup && docker-compose down --remove-orphans'
+
+[exit=0]
+
+STDOUT:
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Stopping local-dns-server-10.9.0.53 ... 
+Stopping seed-attacker              ... 
+Stopping attacker-ns-10.9.0.153     ... 
+Stopping seed-router                ... 
+Stopping user-10.9.0.5              ... 
+[4A[2K
+Stopping seed-attacker              ... [32mdone[0m
+[4B[3A[2K
+Stopping attacker-ns-10.9.0.153     ... [32mdone[0m
+[3B[1A[2K
+Stopping user-10.9.0.5              ... [32mdone[0m
+[1B[5A[2K
+Stopping local-dns-server-10.9.0.53 ... [32mdone[0m
+[5B[2A[2K
+Stopping seed-router                ... [32mdone[0m
+[2BRemoving local-dns-server-10.9.0.53 ... 
+Removing seed-attacker              ... 
+Removing attacker-ns-10.9.0.153     ... 
+Removing seed-router                ... 
+Removing user-10.9.0.5              ... 
+[4A[2K
+Removing seed-attacker              ... [32mdone[0m
+[4B[1A[2K
+Removing user-10.9.0.5              ... [32mdone[0m
+[1B[2A[2K
+Removing seed-router                ... [32mdone[0m
+[2B[3A[2K
+Removing attacker-ns-10.9.0.153     ... [32mdone[0m
+[3B[5A[2K
+Removing local-dns-server-10.9.0.53 ... [32mdone[0m
+[5BRemoving network net-10.9.0.0
+Removing network net-10.8.0.0

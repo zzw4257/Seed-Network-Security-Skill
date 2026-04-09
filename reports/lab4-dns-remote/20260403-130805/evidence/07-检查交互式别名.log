@@ -1,0 +1,22 @@
+$ ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -ic 'type dcbuild dcup dcdown dockps docksh'
+
+[exit=0]
+
+STDOUT:
+dcbuild is aliased to `docker-compose build'
+dcup is aliased to `docker-compose up'
+dcdown is aliased to `docker-compose down'
+dockps is aliased to `docker ps --format "{{.ID}}  {{.Names}}" | sort -k 2'
+docksh is a function
+docksh () 
+{ 
+    docker exec -it $1 /bin/bash
+}
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+bash: cannot set terminal process group (-1): Inappropriate ioctl for device
+bash: no job control in this shell

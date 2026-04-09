@@ -1,0 +1,11 @@
+$ ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec -d seed-attacker bash -lc '"'"'python3 /volumes/dns_spoof_lab.py --task task1 --iface br-256929766fcf --timeout 25 >/volumes/task1.log 2>&1'"'"''
+
+[exit=0]
+
+STDOUT:
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html

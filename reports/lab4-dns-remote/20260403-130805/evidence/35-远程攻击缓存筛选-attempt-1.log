@@ -1,0 +1,23 @@
+$ ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec local-dns-server-10.9.0.53 bash -lc '"'"'grep -n '"'"'"'"'"'"'"'"'attacker32.com\|example.com'"'"'"'"'"'"'"'"' /var/cache/bind/dump.db || true'"'"''
+
+[exit=0]
+
+STDOUT:
+84:example.com.		777570	NS	ns.attacker32.com.
+96:nprqb.example.com.	863991	A	1.2.3.4
+98:qghon.example.com.	606581	\-A	;-$NXRRSET
+99:; qghon.example.com. RRSIG NSEC ...
+100:; qghon.example.com. NSEC \000.qghon.example.com. RRSIG NSEC TYPE128
+101:; example.com. SOA elliott.ns.cloudflare.com. dns.cloudflare.com. 2400651045 10000 2400 604800 1800
+102:; example.com. RRSIG SOA ...
+104:wsugp.example.com.	606572	\-A	;-$NXRRSET
+105:; wsugp.example.com. RRSIG NSEC ...
+106:; wsugp.example.com. NSEC \000.wsugp.example.com. RRSIG NSEC TYPE128
+107:; example.com. SOA elliott.ns.cloudflare.com. dns.cloudflare.com. 2400651045 10000 2400 604800 1800
+108:; example.com. RRSIG SOA ...
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html

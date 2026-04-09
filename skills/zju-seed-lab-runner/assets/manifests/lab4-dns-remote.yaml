@@ -1,0 +1,74 @@
+{
+  "profile_id": "lab4-dns-remote",
+  "doc_paths": [
+    "lab4-dns/DNS 攻击实验 - 远程攻击.md"
+  ],
+  "setup_path": "lab4-dns/Labsetup_DNS_Remote",
+  "remote_workspace": "~/seed-labs/lab4-dns-remote/workspace",
+  "sync_paths": [
+    "lab4-dns/Labsetup_DNS_Remote"
+  ],
+  "materials_checks": [
+    {
+      "label": "远程实验指导文档",
+      "path": "lab4-dns/DNS 攻击实验 - 远程攻击.md",
+      "required": true
+    },
+    {
+      "label": "Labsetup 目录",
+      "path": "lab4-dns/Labsetup_DNS_Remote",
+      "required": true
+    },
+    {
+      "label": "Compose 文件",
+      "path": "lab4-dns/Labsetup_DNS_Remote/docker-compose.yml",
+      "required": true
+    },
+    {
+      "label": "Kaminsky C 骨架",
+      "path": "lab4-dns/Labsetup_DNS_Remote/Files/attack.c",
+      "required": true
+    }
+  ],
+  "preflight_checks": [
+    "repo-materials",
+    "ssh-connectivity",
+    "sudo-password",
+    "docker-compose",
+    "shell-aliases",
+    "python-runtime",
+    "docker-cleanliness"
+  ],
+  "execution_steps": [
+    "审查材料与远端环境",
+    "迁移 Labsetup 到远端标准工作区",
+    "使用 Compose 重建 DNS 远程攻击环境",
+    "生成 Kaminsky 请求与响应模板",
+    "补全并编译 attack.c",
+    "运行攻击并验证缓存与 dig 结果",
+    "生成 Markdown 报告与 quiz"
+  ],
+  "evidence_commands": [
+    "dig ns.attacker32.com",
+    "dig www.example.com",
+    "dig @ns.attacker32.com www.example.com",
+    "rndc dumpdb -cache && grep attacker /var/cache/bind/dump.db",
+    "gcc -o attack attack.c",
+    "timeout 30s ./attack"
+  ],
+  "report_sections": [
+    "实验总结",
+    "材料审查表",
+    "前置环境表",
+    "逐任务执行记录",
+    "结果与证据",
+    "实验成果留档",
+    "思考题与解释",
+    "附加 Quiz"
+  ],
+  "quiz_prompts": [
+    "Kaminsky 攻击为什么要不断更换随机子域名？",
+    "为什么远程缓存投毒要同时考虑速度和 Transaction ID？",
+    "混合使用 Scapy 与 C 相比纯 Python 的核心收益是什么？"
+  ]
+}

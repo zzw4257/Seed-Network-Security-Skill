@@ -1,0 +1,17 @@
+$ ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'docker exec user-10.9.0.5 bash -lc '"'"'for ns in $(dig +short NS example.com); do dig +short $ns; done | grep -E '"'"'"'"'"'"'"'"'^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'"'"'"'"'"'"'"'"' | sort -u'"'"''
+
+[exit=0]
+
+STDOUT:
+108.162.192.162
+108.162.195.228
+162.159.44.228
+172.64.32.162
+172.64.35.228
+173.245.58.162
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html

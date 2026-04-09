@@ -1,0 +1,25 @@
+$ ssh -i /Users/zzw4257/.ssh/seed-way -p 2345 -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 seed@localhost bash -lc 'cd /home/seed/seed-labs/lab4-dns-remote/workspace/labsetup && docker-compose up -d'
+
+[exit=0]
+
+STDOUT:
+
+
+STDERR:
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+Creating network "seed-net" with the default driver
+Creating user-10.9.0.5 ... 
+Creating seed-attacker ... 
+Creating local-dns-server-10.9.0.53 ... 
+Creating attacker-ns-10.9.0.153     ... 
+[3A[2K
+Creating seed-attacker              ... [32mdone[0m
+[3B[4A[2K
+Creating user-10.9.0.5              ... [32mdone[0m
+[4B[2A[2K
+Creating local-dns-server-10.9.0.53 ... [32mdone[0m
+[2B[1A[2K
+Creating attacker-ns-10.9.0.153     ... [32mdone[0m
+[1B

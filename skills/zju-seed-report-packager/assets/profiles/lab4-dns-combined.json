@@ -1,0 +1,486 @@
+{
+  "profile_id": "lab4-dns-combined",
+  "title": "实验四：DNS 攻击实验（本地与远程）",
+  "header": "网络安全原理实践：实验四 DNS 攻击实验",
+  "course": "网络安全原理实践",
+  "report_filename": "lab4_dns_report.tex",
+  "final_pdf_name": "周子为3230106267-web-security-lab4_report.pdf",
+  "package_dirname": "lab4-dns-combined",
+  "template_dir": "lab4-dns/report-template",
+  "student": {
+    "name": "周子为",
+    "email": "zzw4257@gmail.com",
+    "college": "竺可桢学院 / 计算机科学与技术学院",
+    "department": "混合班 / 信息安全",
+    "major": "信息安全",
+    "student_id": "3230106267",
+    "instructor": "杜文亮教授"
+  },
+  "source_runs": {
+    "local": {
+      "reports_dir": "reports/lab4-dns-local",
+      "default_run_id": "20260403-125920"
+    },
+    "remote": {
+      "reports_dir": "reports/lab4-dns-remote",
+      "default_run_id": "20260403-130805"
+    }
+  },
+  "doc_paths": [
+    "lab4-dns/DNS 攻击实验 - 本地攻击.md",
+    "lab4-dns/DNS 攻击实验 - 远程攻击.md"
+  ],
+  "chapter_map": [
+    {
+      "id": "overview",
+      "title": "实验目标与背景"
+    },
+    {
+      "id": "environment",
+      "title": "实验环境、平台约定与证据来源说明"
+    },
+    {
+      "id": "local-part",
+      "title": "第一部分：本地 DNS 攻击"
+    },
+    {
+      "id": "remote-part",
+      "title": "第二部分：远程 DNS / Kaminsky 攻击"
+    },
+    {
+      "id": "conclusion",
+      "title": "综合分析与实验结论"
+    },
+    {
+      "id": "appendix",
+      "title": "附录：关键代码、证据索引、运行记录来源"
+    }
+  ],
+  "selected_logs": [
+    {
+      "id": "local-task1-dig",
+      "source": "local",
+      "filename": "28-task1-触发-dig-attempt-1.log",
+      "stream": "stdout",
+      "max_lines": 6,
+      "snippet_name": "local-task1-dig.txt",
+      "title": "本地任务 1：用户侧 dig 输出"
+    },
+    {
+      "id": "local-task1-attack-log",
+      "source": "local",
+      "filename": "31-读取-task1-攻击日志.log",
+      "stream": "stdout",
+      "max_lines": 6,
+      "snippet_name": "local-task1-attack-log.txt",
+      "title": "本地任务 1：攻击者脚本命中日志"
+    },
+    {
+      "id": "local-baseline-ns",
+      "source": "local",
+      "filename": "19-基线检查-ns-attacker32-com.log",
+      "stream": "stdout",
+      "max_lines": 6,
+      "snippet_name": "local-baseline-ns.txt",
+      "title": "本地实验：ns.attacker32.com 基线解析"
+    },
+    {
+      "id": "local-baseline-official",
+      "source": "local",
+      "filename": "20-基线检查官方-www-example-com.log",
+      "stream": "stdout",
+      "max_lines": 8,
+      "snippet_name": "local-baseline-official.txt",
+      "title": "本地实验：官方 www.example.com 基线解析"
+    },
+    {
+      "id": "local-baseline-attacker",
+      "source": "local",
+      "filename": "21-基线检查攻击者权威结果.log",
+      "stream": "stdout",
+      "max_lines": 6,
+      "snippet_name": "local-baseline-attacker.txt",
+      "title": "本地实验：攻击者权威服务器返回结果"
+    },
+    {
+      "id": "local-task2-dig",
+      "source": "local",
+      "filename": "36-task2-触发-dig-attempt-1.log",
+      "stream": "stdout",
+      "max_lines": 8,
+      "snippet_name": "local-task2-double-dig.txt",
+      "title": "本地任务 2：连续 dig 输出"
+    },
+    {
+      "id": "local-task2-cache",
+      "source": "local",
+      "filename": "40-task2-缓存筛选-attempt-1.log",
+      "stream": "stdout",
+      "max_lines": 8,
+      "snippet_name": "local-task2-cache.txt",
+      "title": "本地任务 2：缓存命中结果"
+    },
+    {
+      "id": "local-task3-dig",
+      "source": "local",
+      "filename": "45-task3-触发-dig-attempt-1.log",
+      "stream": "stdout",
+      "max_lines": 10,
+      "snippet_name": "local-task3-dig.txt",
+      "title": "本地任务 3：多主机名 dig 输出"
+    },
+    {
+      "id": "local-task3-cache",
+      "source": "local",
+      "filename": "49-task3-缓存筛选-attempt-1.log",
+      "stream": "stdout",
+      "max_lines": 12,
+      "snippet_name": "local-task3-cache.txt",
+      "title": "本地任务 3：NS 投毒缓存结果"
+    },
+    {
+      "id": "local-task4-cache",
+      "source": "local",
+      "filename": "58-task4-缓存筛选-attempt-1.log",
+      "stream": "stdout",
+      "max_lines": 10,
+      "snippet_name": "local-task4-cache.txt",
+      "title": "本地任务 4：跨域记录缓存结果"
+    },
+    {
+      "id": "local-task5-cache",
+      "source": "local",
+      "filename": "67-task5-缓存筛选-attempt-1.log",
+      "stream": "stdout",
+      "max_lines": 10,
+      "snippet_name": "local-task5-cache.txt",
+      "title": "本地任务 5：附加部分缓存结果"
+    },
+    {
+      "id": "remote-authority-ips",
+      "source": "remote",
+      "filename": "20-查询合法权威-ns-ip.log",
+      "stream": "stdout",
+      "max_lines": 12,
+      "snippet_name": "remote-authority-ips.txt",
+      "title": "远程实验：example.com 当前权威 IPv4 列表"
+    },
+    {
+      "id": "remote-cache-success",
+      "source": "remote",
+      "filename": "35-远程攻击缓存筛选-attempt-1.log",
+      "stream": "stdout",
+      "max_lines": 16,
+      "snippet_name": "remote-cache-success.txt",
+      "title": "远程实验：Kaminsky 成功后的缓存筛选"
+    },
+    {
+      "id": "remote-final-dig",
+      "source": "remote",
+      "filename": "37-验证远程攻击结果.log",
+      "stream": "stdout",
+      "max_lines": 8,
+      "snippet_name": "remote-final-dig.txt",
+      "title": "远程实验：最终 dig 验证"
+    }
+  ],
+  "selected_generated_code": [
+    {
+      "source": "local",
+      "relative_path": "evidence/generated/dns_spoof_lab.py",
+      "output_name": "dns_spoof_lab.py",
+      "language": "Python",
+      "title": "本地 DNS 攻击脚本"
+    },
+    {
+      "source": "remote",
+      "relative_path": "evidence/generated/prepare_packets.py",
+      "output_name": "prepare_packets.py",
+      "language": "Python",
+      "title": "远程实验 Scapy 模板生成脚本"
+    },
+    {
+      "source": "remote",
+      "relative_path": "evidence/generated/attack.c",
+      "output_name": "attack.c",
+      "language": "C",
+      "title": "远程实验 Kaminsky C 攻击程序"
+    }
+  ],
+  "pane_roles": {
+    "user": {
+      "title": "用户终端",
+      "cwd": "lab4-dns"
+    },
+    "attacker": {
+      "title": "攻击者终端",
+      "cwd": "lab4-dns"
+    },
+    "dns": {
+      "title": "本地 DNS 终端",
+      "cwd": "lab4-dns"
+    },
+    "host": {
+      "title": "宿主机终端",
+      "cwd": "lab4-dns"
+    },
+    "notes": {
+      "title": "判读要点",
+      "cwd": "lab4-dns"
+    },
+    "conclusion": {
+      "title": "结论",
+      "cwd": "lab4-dns"
+    }
+  },
+  "board_specs": [
+    {
+      "task_id": "local-config-dig-baseline",
+      "filename": "local-config-dig-baseline.png",
+      "section": "本地配置测试"
+    },
+    {
+      "task_id": "local-task1-user-spoof-result",
+      "filename": "local-task1-user-spoof-result.png",
+      "section": "任务 1：直接向用户伪造响应"
+    },
+    {
+      "task_id": "local-task2-cache-poisoning",
+      "filename": "local-task2-cache-poisoning.png",
+      "section": "任务 2：DNS 缓存投毒"
+    },
+    {
+      "task_id": "local-task3-ns-poisoning",
+      "filename": "local-task3-ns-poisoning.png",
+      "section": "任务 3：伪造 NS 记录"
+    },
+    {
+      "task_id": "local-task4-cross-domain-cache-observation",
+      "filename": "local-task4-cross-domain-cache-observation.png",
+      "section": "任务 4：伪造另一个域的 NS 记录"
+    },
+    {
+      "task_id": "local-task5-additional-section-cache",
+      "filename": "local-task5-additional-section-cache.png",
+      "section": "任务 5：附加部分记录缓存分析"
+    },
+    {
+      "task_id": "remote-baseline-dig-and-cache",
+      "filename": "remote-baseline-dig-and-cache.png",
+      "section": "环境搭建与基线验证"
+    },
+    {
+      "task_id": "remote-request-trigger-trace",
+      "filename": "remote-request-trigger-trace.png",
+      "section": "任务 2：构造 DNS 请求"
+    },
+    {
+      "task_id": "remote-forged-response-trace",
+      "filename": "remote-forged-response-trace.png",
+      "section": "任务 3：伪造 DNS 响应"
+    },
+    {
+      "task_id": "remote-kaminsky-cache-success",
+      "filename": "remote-kaminsky-cache-success.png",
+      "section": "任务 4：Kaminsky 攻击实施"
+    },
+    {
+      "task_id": "remote-final-dig-verification",
+      "filename": "remote-final-dig-verification.png",
+      "section": "任务 5：攻击结果验证"
+    }
+  ],
+  "storyboard_specs": [
+    {
+      "task_id": "local-config-dig-baseline",
+      "filename": "storyboard-local-config-dig-baseline.png",
+      "source_board": "local-config-dig-baseline.png",
+      "title": "本地配置测试连续记录板"
+    },
+    {
+      "task_id": "local-task1-user-spoof-result",
+      "filename": "storyboard-local-task1-user-spoof-result.png",
+      "source_board": "local-task1-user-spoof-result.png",
+      "title": "任务 1：直接向用户伪造响应连续记录板"
+    },
+    {
+      "task_id": "local-task2-cache-poisoning",
+      "filename": "storyboard-local-task2-cache-poisoning.png",
+      "source_board": "local-task2-cache-poisoning.png",
+      "title": "任务 2：DNS 缓存投毒连续记录板"
+    },
+    {
+      "task_id": "local-task3-ns-poisoning",
+      "filename": "storyboard-local-task3-ns-poisoning.png",
+      "source_board": "local-task3-ns-poisoning.png",
+      "title": "任务 3：伪造 NS 记录连续记录板"
+    },
+    {
+      "task_id": "local-task4-cross-domain-cache-observation",
+      "filename": "storyboard-local-task4-cross-domain-cache-observation.png",
+      "source_board": "local-task4-cross-domain-cache-observation.png",
+      "title": "任务 4：跨域伪造观察连续记录板"
+    },
+    {
+      "task_id": "local-task5-additional-section-cache",
+      "filename": "storyboard-local-task5-additional-section-cache.png",
+      "source_board": "local-task5-additional-section-cache.png",
+      "title": "任务 5：附加部分缓存分析连续记录板"
+    },
+    {
+      "task_id": "remote-baseline-dig-and-cache",
+      "filename": "storyboard-remote-baseline-dig-and-cache.png",
+      "source_board": "remote-baseline-dig-and-cache.png",
+      "title": "远程基线验证连续记录板"
+    },
+    {
+      "task_id": "remote-request-trigger-trace",
+      "filename": "storyboard-remote-request-trigger-trace.png",
+      "source_board": "remote-request-trigger-trace.png",
+      "title": "任务 2：随机子域名触发连续记录板"
+    },
+    {
+      "task_id": "remote-forged-response-trace",
+      "filename": "storyboard-remote-forged-response-trace.png",
+      "source_board": "remote-forged-response-trace.png",
+      "title": "任务 3：伪造响应构造连续记录板"
+    },
+    {
+      "task_id": "remote-kaminsky-cache-success",
+      "filename": "storyboard-remote-kaminsky-cache-success.png",
+      "source_board": "remote-kaminsky-cache-success.png",
+      "title": "任务 4：Kaminsky 成功连续记录板"
+    },
+    {
+      "task_id": "remote-final-dig-verification",
+      "filename": "storyboard-remote-final-dig-verification.png",
+      "source_board": "remote-final-dig-verification.png",
+      "title": "任务 5：最终验证连续记录板"
+    }
+  ],
+  "contact_sheet_order": [
+    "local-config-dig-baseline.png",
+    "local-task1-user-spoof-result.png",
+    "local-task2-cache-poisoning.png",
+    "local-task3-ns-poisoning.png",
+    "local-task4-cross-domain-cache-observation.png",
+    "local-task5-additional-section-cache.png",
+    "remote-baseline-dig-and-cache.png",
+    "remote-request-trigger-trace.png",
+    "remote-forged-response-trace.png",
+    "remote-kaminsky-cache-success.png",
+    "remote-final-dig-verification.png",
+    "storyboard-local-config-dig-baseline.png",
+    "storyboard-local-task1-user-spoof-result.png",
+    "storyboard-local-task2-cache-poisoning.png",
+    "storyboard-local-task3-ns-poisoning.png",
+    "storyboard-local-task4-cross-domain-cache-observation.png",
+    "storyboard-local-task5-additional-section-cache.png",
+    "storyboard-remote-baseline-dig-and-cache.png",
+    "storyboard-remote-request-trigger-trace.png",
+    "storyboard-remote-forged-response-trace.png",
+    "storyboard-remote-kaminsky-cache-success.png",
+    "storyboard-remote-final-dig-verification.png"
+  ],
+  "screenshot_slots": [
+    {
+      "filename": "local-config-dig-baseline.png",
+      "section": "本地配置测试",
+      "caption": "本地实验基线配置测试",
+      "description": "展示 dig 查询 ns.attacker32.com、官方 www.example.com 与攻击者权威服务器结果的终端画面。",
+      "why": "证明实验环境在攻击前具备可对比的真实与伪造答案。",
+      "terminals": "用户容器终端",
+      "capture_hint": "建议同屏保留三条 dig 结果，最好让命令和输出同时可见。"
+    },
+    {
+      "filename": "local-task1-user-spoof-result.png",
+      "section": "任务 1：直接向用户伪造响应",
+      "caption": "任务 1 用户侧伪造响应结果",
+      "description": "展示用户端 dig 被直接伪造成 1.2.3.5 的画面，可带上攻击脚本运行窗口。",
+      "why": "证明任务 1 影响的是用户主机，而不是 DNS 服务器缓存。",
+      "terminals": "用户容器终端 + 攻击者容器终端",
+      "capture_hint": "建议一张图里同时拍到用户侧 dig 和攻击脚本命中日志。"
+    },
+    {
+      "filename": "local-task2-cache-poisoning.png",
+      "section": "任务 2：DNS 缓存投毒",
+      "caption": "任务 2 缓存投毒结果",
+      "description": "展示连续两次 dig 都返回 1.2.3.5，并辅以 dump.db 中 www.example.com 缓存行。",
+      "why": "证明伪造答案已进入本地 DNS 缓存。",
+      "terminals": "用户容器终端 + 本地 DNS 容器终端",
+      "capture_hint": "建议突出两次 dig 一致返回与缓存命中行。"
+    },
+    {
+      "filename": "local-task3-ns-poisoning.png",
+      "section": "任务 3：伪造 NS 记录",
+      "caption": "任务 3 NS 记录投毒结果",
+      "description": "展示 mail.example.com 等新主机名也由 ns.attacker32.com 返回伪造答案。",
+      "why": "证明攻击影响已从单个主机名扩大到整个 example.com 域。",
+      "terminals": "用户容器终端 + 本地 DNS 容器终端",
+      "capture_hint": "建议保留 mail.example.com 的查询结果和 example.com NS 缓存行。"
+    },
+    {
+      "filename": "local-task4-cross-domain-cache-observation.png",
+      "section": "任务 4：伪造另一个域的 NS 记录",
+      "caption": "任务 4 跨域 NS 投毒观察",
+      "description": "展示缓存中保留 example.com 记录但未接受 google.com 伪造 NS 的关键终端画面。",
+      "why": "证明与当前查询无关的域名记录不会被轻易接纳。",
+      "terminals": "本地 DNS 容器终端",
+      "capture_hint": "建议把 grep 结果拍完整，突出只有 example.com 记录被接纳。"
+    },
+    {
+      "filename": "local-task5-additional-section-cache.png",
+      "section": "任务 5：附加部分记录缓存分析",
+      "caption": "任务 5 附加部分记录缓存观察",
+      "description": "展示 additional section 中相关 glue 记录与无关条目的不同缓存结果。",
+      "why": "证明 DNS 服务器对附加记录有相关性约束。",
+      "terminals": "本地 DNS 容器终端",
+      "capture_hint": "建议对照响应设计与最终缓存，只强调真正留下的关联记录。"
+    },
+    {
+      "filename": "remote-baseline-dig-and-cache.png",
+      "section": "环境搭建与基线验证",
+      "caption": "远程实验基线验证",
+      "description": "展示远程实验环境启动后的 dig 基线、Compose 容器状态与初始缓存状态。",
+      "why": "证明远程攻击前环境已正确搭建。",
+      "terminals": "宿主机/Compose 终端 + 用户容器终端",
+      "capture_hint": "建议把容器状态和基线 dig 结果同时纳入画面。"
+    },
+    {
+      "filename": "remote-request-trigger-trace.png",
+      "section": "任务 2：构造 DNS 请求",
+      "caption": "远程任务 2 请求触发证据",
+      "description": "展示随机子域名请求触发本地 DNS 服务器外发查询的抓包或终端证据。",
+      "why": "证明 Kaminsky 攻击循环的第一步真实发生。",
+      "terminals": "抓包窗口或用户容器终端",
+      "capture_hint": "建议突出随机子域名和查询触发时机。"
+    },
+    {
+      "filename": "remote-forged-response-trace.png",
+      "section": "任务 3：伪造 DNS 响应",
+      "caption": "远程任务 3 伪造响应证据",
+      "description": "展示模板生成或伪造响应抓包，说明响应使用了多个当前权威 IPv4 地址。",
+      "why": "证明伪造数据包字段设计与现实权威服务器一致。",
+      "terminals": "攻击者终端或抓包窗口",
+      "capture_hint": "建议让响应源地址和 Authority Section 一起可见。"
+    },
+    {
+      "filename": "remote-kaminsky-cache-success.png",
+      "section": "任务 4：Kaminsky 攻击实施",
+      "caption": "远程任务 4 Kaminsky 投毒成功",
+      "description": "展示 dump.db 中 example.com NS 已变为 ns.attacker32.com 的终端画面。",
+      "why": "这是远程攻击成功的核心证据。",
+      "terminals": "本地 DNS 容器终端",
+      "capture_hint": "建议让 example.com NS 命中行处于屏幕中央并清晰可读。"
+    },
+    {
+      "filename": "remote-final-dig-verification.png",
+      "section": "任务 5：攻击结果验证",
+      "caption": "远程任务 5 最终 dig 验证",
+      "description": "展示普通 dig 与 @ns.attacker32.com dig 同时返回 1.2.3.5 的结果。",
+      "why": "证明本地 DNS 已被投毒并转向攻击者控制的权威服务器。",
+      "terminals": "用户容器终端",
+      "capture_hint": "建议两条 dig 输出完整入镜，并保留命令行上下文。"
+    }
+  ]
+}

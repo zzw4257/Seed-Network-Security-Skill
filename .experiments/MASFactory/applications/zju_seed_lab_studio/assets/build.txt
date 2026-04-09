@@ -1,0 +1,141 @@
+You need to design a workflow for a ZJU SEED lab studio that wraps an existing experiment runner and report packager into a presentation-friendly multi-agent system.
+
+The user should be able to describe:
+- which SEED lab they want to execute or package
+- which route mode they want to use
+- whether they want to run the lab, only package a report, or launch the manual evidence UI
+
+The graph should be practical and compact. It should not invent new execution logic when the wrapped tools already exist.
+
+The top-level structure should be:
+
+ENTRY -> context_summary
+context_summary -> route_summary
+route_summary -> runner_preflight
+runner_preflight -> runner_execute
+runner_execute -> report_package
+report_package -> manual_ui
+manual_ui -> verify
+verify -> summary
+summary -> EXIT
+
+Node requirements:
+
+1. context_summary
+- type: Action
+- role: workflow orchestrator
+- purpose: summarize workspace root, workflow mode, route mode, runner profile, and report profile
+- inputs:
+  - workspace_root
+  - workflow_mode
+  - route_mode
+  - report_profile
+  - runner_profile
+- outputs:
+  - context_summary
+
+2. route_summary
+- type: Action
+- role: execution route explainer
+- purpose: explain whether the current run uses reverse SSH direct mode or seed-runner session mode
+- inputs:
+  - route_mode
+- outputs:
+  - route_summary
+
+3. runner_preflight
+- type: Action
+- role: experiment environment checker
+- purpose: call the existing zju-seed-lab-runner preflight only when workflow_mode is full_lab
+- inputs:
+  - workspace_root
+  - workflow_mode
+  - runner_profile
+- outputs:
+  - runner_preflight_status
+  - runner_preflight_output
+
+4. runner_execute
+- type: Action
+- role: lab executor
+- purpose: call the existing zju-seed-lab-runner full-run only when workflow_mode is full_lab
+- inputs:
+  - workspace_root
+  - workflow_mode
+  - runner_profile
+- outputs:
+  - runner_execute_status
+  - runner_execute_output
+
+5. report_package
+- type: Action
+- role: report packaging stage
+- purpose:
+  - if workflow_mode is report_only, inspect the current report package state
+  - otherwise build the report package with zju-seed-report-packager
+- inputs:
+  - workspace_root
+  - workflow_mode
+  - report_profile
+- outputs:
+  - report_stage_status
+  - report_stage_output
+  - package_root
+
+6. manual_ui
+- type: Action
+- role: human finishing surface
+- purpose: optionally launch the manual evidence UI when launch_ui is true
+- inputs:
+  - workspace_root
+  - package_root
+  - report_profile
+  - ui_port
+  - launch_ui
+- outputs:
+  - package_root
+  - manual_ui_status
+  - manual_ui_output
+  - manual_ui_pid
+
+7. verify
+- type: Action
+- role: evidence validator
+- purpose: optionally run report evidence verification when workflow_mode is package_review or full_lab
+- inputs:
+  - workspace_root
+  - package_root
+  - report_profile
+  - workflow_mode
+  - manual_ui_status
+  - manual_ui_output
+- outputs:
+  - package_root
+  - manual_ui_status
+  - manual_ui_output
+  - verify_status
+  - verify_output
+  - verification_dir
+
+8. summary
+- type: Action
+- role: final summary writer
+- purpose: write a run summary file to the application-local runs directory
+- inputs:
+  - workflow_mode
+  - route_mode
+  - report_profile
+  - package_root
+  - manual_ui_status
+  - manual_ui_output
+  - verify_status
+  - verify_output
+- outputs:
+  - studio_summary
+  - studio_summary_path
+
+Design goals:
+- keep the graph understandable in MASFactory Visualizer
+- do not duplicate the actual runner or report logic inside the graph
+- make the graph useful as a presentation shell and orchestration view
+- keep the graph compatible with future Vibe Graphing refinement
