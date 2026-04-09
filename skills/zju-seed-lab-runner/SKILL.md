@@ -12,9 +12,27 @@ description: Automated execution and archival workflow for Zhou Ziwei (323010626
 - Treat the Proxmox VM as the current default execution ground truth: Ubuntu 20.04, reverse-SSH entry `ssh -i ~/.ssh/seed-way -p 2345 seed@localhost`, test sudo password `dees`.
 - Prefer `python` locally and `python3` remotely because that matches the verified environment.
 
+## Default Operating Contract
+
+- When the agent is pointed at this repository or asked to start a 浙江大学《网络安全原理与实践》SEED assignment in the default way, treat this skill as the mainline execution surface.
+- Do not begin with long explanations. Read the current repository, identify the relevant lab materials, and move into the mainline workflow directly.
+- Operate quietly and autonomously by default. Only interrupt the user when an external prerequisite is missing, a destructive action outside the lab workspace would be required, or a true blocker prevents progress.
+- When blocked by missing external configuration, report only three things:
+  1. what is missing
+  2. where it should be configured
+  3. what the next step will be once it is fixed
+- Do not make studio / demo / unified-workbench behavior the default starting point. Those belong after the mainline work is complete, or when the user explicitly requests them.
+
 ## Execution Modes
 
-At the very beginning, if the user has not already pinned a route, present these two execution routes compactly and ask them to choose one.
+At the very beginning, if the user has not already pinned a route, use the current default route unless there is a concrete reason not to.
+
+- Default to `Reverse-SSH direct mode` for this repository and this course setup.
+- Do not stop to ask the user to choose between modes during ordinary mainline execution when the reverse tunnel is the only realistic default.
+- Only surface both modes explicitly when:
+  - the user asks about execution routes
+  - the direct route is unavailable
+  - the user clearly wants a more general remote execution setup
 
 1. `Reverse-SSH direct mode`:
    - This is the default and recommended route for the current setup.
@@ -30,10 +48,18 @@ When comparing them for the user:
 - Present `seed-runner session mode` as the more general but heavier alternative.
 - If the user picks `seed-runner`, immediately tell them the exact configuration checklist and command flow from the reference file before doing any lab work.
 
+## Delivery Contract
+
+- The default goal is not merely to execute commands. The goal is to complete the assignment end-to-end and leave behind a usable archive.
+- If the user asks to "start", "do the assignment", "按默认模式开始", or equivalent, complete the mainline experiment workflow through archive-ready Markdown output under `reports/`.
+- If the user explicitly asks for a final report, a complete report, a detailed report, or an end-to-end final deliverable, treat the Markdown archive as an intermediate artifact and continue into the formal report flow when a matching report-packager profile exists.
+- For `lab4-dns`, that means the work should not stop at the archived Markdown if the user clearly wants the final complete report. Continue into `zju-seed-report-packager` once the necessary archived runs exist.
+- If there is no matching formal report profile yet for the experiment, finish the archive-ready Markdown report and state that the formal report-packager profile has not been defined.
+
 ## Workflow
 
 1. Choose the execution route first if it is not already fixed.
-   - For the current workspace, recommend direct reverse-SSH.
+   - For the current workspace, default to direct reverse-SSH unless there is a real reason to fall back.
    - For the optional `seed-runner` route, explain the setup burden and exact required config fields.
 2. Audit the experiment package before touching the VM.
    - Read all relevant Markdown guidance files.
@@ -57,11 +83,16 @@ When comparing them for the user:
 
 - Inspect first, then execute. Do not skip the material audit or preflight stage.
 - Avoid asking for permission on routine, reversible steps. Proceed automatically unless the action is destructive outside the lab workspace.
+- Avoid asking the user to confirm ordinary mainline progress. Once the repository and profile are identified, keep moving.
 - Prefer non-interactive container execution. Do not open `docksh` or nested shells unless debugging absolutely requires it.
 - When root is required on the teaching VM, run `echo dees | sudo -S ...`.
 - When a step waits in the background, say so clearly in the report or status update.
 - When a run fails, try non-destructive recovery before escalating: flush caches, restart Compose, rebuild, or retry with preserved evidence.
 - Finish with a report and post-lab quiz prompts. Do not leave the run undocumented.
+- Treat user-visible interaction as exception-first:
+  - use progress updates for meaningful stage changes
+  - use blocker messages only when outside configuration or environment setup is required
+  - otherwise prefer doing over narrating
 
 ## Resources
 

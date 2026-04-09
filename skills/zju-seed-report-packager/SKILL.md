@@ -11,6 +11,17 @@ description: Build polished Zhejiang University XeLaTeX experiment report packag
 - Treat the job as report packaging, not experiment execution.
 - Default to a refined Zhejiang University XeLaTeX report that is faithful to real evidence and pleasant for later manual screenshot补证.
 
+## Default Operating Contract
+
+- This skill is the mainline formal-deliverable surface once archived evidence already exists.
+- Do not treat report generation as a brainstorming task by default. If the user asks for the final report, the complete report, or the detailed report, move directly into inspect -> build -> compile rather than stopping after a plan.
+- Operate quietly and directly. Only interrupt when an external prerequisite is missing, such as TeX not being available or required archived runs not existing.
+- If blocked by missing external prerequisites, report only:
+  1. what is missing
+  2. where it must be configured or provided
+  3. what the next step will be once it is fixed
+- Manual screenshot upload and studio workbench usage are post-mainline finishing surfaces. Do not make them the default first step unless the user explicitly asks for them or the automatic report package has already been produced and the next obvious step is human补证.
+
 ## Workflow
 
 1. Inspect the finished lab evidence before writing anything.
@@ -30,6 +41,18 @@ description: Build polished Zhejiang University XeLaTeX experiment report packag
    - Prefer local `latexmk -xelatex` or `xelatex`.
    - Keep Docker TeX only as fallback guidance, not the primary path.
 
+## Delivery Contract
+
+- The default finished state for this skill is a compiled formal report package, not merely an inspected evidence table.
+- If the user explicitly requests a final / complete / detailed report, continue through:
+  1. run selection
+  2. evidence mapping
+  3. package generation
+  4. PDF compilation
+- Do not default to opening Manual UI or studio after build unless:
+  - the user explicitly asks for it
+  - or the automatic report is already built and the next missing part is clearly manual screenshot completion
+
 ## Rules
 
 - Do not rerun the lab just to write the report.
@@ -37,6 +60,7 @@ description: Build polished Zhejiang University XeLaTeX experiment report packag
 - Keep the report body polished and task-level; move raw logs and exhaustive traces into appendices or snippets.
 - Always generate `SHOT_LIST.md` together with the TeX package.
 - Always preserve a stable package layout so users can补图 and recompile without touching the script.
+- Treat `build` as the default path when the user wants the real deliverable. Treat `inspect` as a preview or diagnostic path, not the normal final stop.
 
 ## Resources
 
